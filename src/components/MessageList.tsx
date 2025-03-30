@@ -5,7 +5,6 @@ import {
   User,
   Copy,
   Check,
-  MessageSquare,
   BadgeHelp,
   BookText,
   Repeat,
@@ -57,7 +56,31 @@ const MessageList: React.FC<MessageListProps> = ({
     });
   };
 
-  const handleMenuClick = (titulo: string) => {
+  // 🔗 Envia mensagem para a função da OpenAI
+  const sendMessageToAI = async (text: string) => {
+    try {
+      const res = await fetch("/.netlify/functions/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        return data.reply;
+      } else {
+        console.error("Erro da IA:", data.error);
+        return "Desculpe, ocorreu um erro ao gerar a resposta.";
+      }
+    } catch (err) {
+      console.error("Erro na requisição:", err);
+      return "Não foi possível se comunicar com a IA.";
+    }
+  };
+
+  // ✉️ Quando o usuário clica num botão do menu
+  const handleMenuClick = async (titulo: string) => {
     const userMessage: ChatMessage = {
       id: Date.now(),
       text: `Quero ajuda com ${titulo}`,
@@ -65,17 +88,18 @@ const MessageList: React.FC<MessageListProps> = ({
       timestamp: new Date(),
     };
 
+    onSendMessage?.(userMessage);
+
+    const aiReply = await sendMessageToAI(userMessage.text);
+
     const aiMessage: ChatMessage = {
       id: Date.now() + 1,
-      text: "Qual o produto que você vende?",
+      text: aiReply,
       sender: "ai",
       timestamp: new Date(),
     };
 
-    onSendMessage?.(userMessage);
-    setTimeout(() => {
-      onSendMessage?.(aiMessage);
-    }, 300);
+    onSendMessage?.(aiMessage);
   };
 
   const menus = [
