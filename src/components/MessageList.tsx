@@ -56,10 +56,9 @@ const MessageList: React.FC<MessageListProps> = ({
     });
   };
 
-  // 🔗 Envia mensagem para a função da OpenAI
   const sendMessageToAI = async (text: string) => {
     try {
-      const res = await fetch("/.netlify/functions/chat", {
+      const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text }),
@@ -79,7 +78,6 @@ const MessageList: React.FC<MessageListProps> = ({
     }
   };
 
-  // ✉️ Quando o usuário clica num botão do menu
   const handleMenuClick = async (titulo: string) => {
     const userMessage: ChatMessage = {
       id: Date.now(),
