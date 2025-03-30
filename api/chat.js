@@ -1,10 +1,10 @@
-const { OpenAI } = require("openai");
+import { OpenAI } from "openai";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Método não permitido" });
   }
@@ -26,4 +26,4 @@ module.exports = async (req, res) => {
       error: "Erro ao gerar resposta da IA",
     });
   }
-};
+}
