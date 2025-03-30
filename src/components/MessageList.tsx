@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useRef, useState } from "react";
 import { ChatMessage } from "../types";
 import {
@@ -212,6 +214,7 @@ const MessageList: React.FC<MessageListProps> = ({
         </div>
       )}
 
+      {/* mensagens */}
       {messages.map((message) => (
         <div
           key={message.id}
