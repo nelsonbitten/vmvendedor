@@ -1,21 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {
-  Send,
-  MessageSquare,
-  Download,
-  Settings,
-  Moon,
-  Sun,
-} from "lucide-react";
+import { Download, Settings, Moon, Sun } from "lucide-react";
 import { ChatMessage } from "./types";
 import MessageList from "./components/MessageList";
-import ProgressBar from "./components/ProgressBar";
 import MessageInput from "./components/MessageInput";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import AdminPanel from "./admin/AdminPanel";
 import { Routes, Route, Link } from "react-router-dom";
-import { supabase } from "./lib/supabaseClient";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function ChatApp() {
@@ -24,7 +15,6 @@ function ChatApp() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const MAX_MESSAGES = 1000;
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -52,64 +42,37 @@ function ChatApp() {
     setDeferredPrompt(null);
   };
 
-  const fetchConteudoDoDia = async (tipo: "remarketing" | "post") => {
-    setIsTyping(true);
-    const today = new Date().toISOString().split("T")[0];
+  // ✅ Atualizado para receber texto + imagem
+  const handleSendMessage = (text: string, image?: File) => {
+    if (!text.trim() && !image) return;
 
-    const { data: conteudo, error } = await supabase
-      .from("conteudos")
-      .select("*")
-      .eq("type", tipo)
-      .eq("date", today)
-      .limit(1)
-      .single();
-
-    setIsTyping(false);
-
-    if (error || !conteudo) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now(),
-          text: `Não encontrei ${tipo} para hoje (${today}).`,
-          sender: "ai",
-          timestamp: new Date(),
-        },
-      ]);
-      return;
-    }
-
-    const novaMensagem: ChatMessage = {
-      id: Date.now(),
-      text: conteudo.text,
-      sender: "ai",
-      timestamp: new Date(),
-      image: conteudo.image || undefined,
-    };
-
-    setMessages((prev) => [...prev, novaMensagem]);
-  };
-
-  const handleSendMessage = async (text: string) => {
-    if (!text.trim()) return;
-
-    const userMessage: ChatMessage = {
+    const newMessage: ChatMessage = {
       id: Date.now(),
       text,
       sender: "user",
       timestamp: new Date(),
+      image: image ? URL.createObjectURL(image) : undefined,
     };
-    setMessages((prev) => [...prev, userMessage]);
+
+    setMessages((prev) => [...prev, newMessage]);
     setIsTyping(true);
-    setIsTyping(false);
+
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          text: "Recebido! Em breve analisaremos sua informação.",
+          sender: "ai",
+          timestamp: new Date(),
+        },
+      ]);
+      setIsTyping(false);
+    }, 600);
   };
 
-  const handleRemarketing = () => {
-    fetchConteudoDoDia("remarketing");
-  };
-
-  const handlePost = () => {
-    fetchConteudoDoDia("post");
+  const handleBackToMenu = () => {
+    setMessages([]);
   };
 
   return (
@@ -119,7 +82,7 @@ function ChatApp() {
       } overscroll-none`}
     >
       <header
-        className={`$${
+        className={`${
           isDarkMode
             ? "bg-gray-900 border-gray-700"
             : "bg-white border-gray-200"
@@ -132,17 +95,12 @@ function ChatApp() {
                 isDarkMode ? "text-white" : "text-gray-800"
               } flex items-center gap-2`}
             >
-              <img
-                src="/logo.png"
-                alt="Logo"
-                className="w-9 h-9 rounded-full object-contain bg-white dark:bg-gray-800 shadow"
-              />
-              Vender Maquininha
+              NexOS
             </h1>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsDarkMode(!isDarkMode)}
-                className={`$${
+                className={`${
                   isDarkMode
                     ? "text-gray-300 hover:text-white"
                     : "text-gray-600 hover:text-gray-800"
@@ -155,23 +113,18 @@ function ChatApp() {
                   <Moon className="w-5 h-5" />
                 )}
               </button>
-              {/*
-  Para reativar o botão de engrenagem (abrir admin), descomente este bloco.
-*/}
 
-              {/* 
-<Link
-  to="/admin/painel"
-  className={`${
-    isDarkMode
-      ? "text-gray-300 hover:text-white"
-      : "text-gray-600 hover:text-gray-800"
-  } transition-colors`}
-  title="Abrir Admin"
->
-  <Settings className="w-5 h-5" />
-</Link> 
-*/}
+              <Link
+                to="/admin/painel"
+                className={`${
+                  isDarkMode
+                    ? "text-gray-300 hover:text-white"
+                    : "text-gray-600 hover:text-gray-800"
+                } transition-colors`}
+                title="Abrir Admin"
+              >
+                <Settings className="w-5 h-5" />
+              </Link>
 
               {isInstallable && (
                 <button
@@ -184,59 +137,19 @@ function ChatApp() {
               )}
             </div>
           </div>
-          {/*
-  Para reativar a barra de progresso de mensagens, descomente este bloco.
-  Isso mostrará o número de mensagens atuais comparado ao limite.
-*/}
-
-          {/* 
-<ProgressBar
-  current={messages.length}
-  max={MAX_MESSAGES}
-  isDarkMode={isDarkMode}
-/> 
-*/}
         </div>
       </header>
 
       <main className="flex-1 overflow-hidden max-w-4xl w-full mx-auto relative">
-        <div className="flex flex-col md:flex-row gap-4 px-4 py-6">
-          <button
-            onClick={handleRemarketing}
-            className="flex-1 bg-black text-white px-6 py-3 rounded-lg text-lg font-semibold shadow hover:bg-opacity-90 transition"
-          >
-            Remarketing de Hoje
-            <div className="text-sm font-normal">Clique aqui</div>
-          </button>
-          <button
-            onClick={handlePost}
-            className="flex-1 bg-white text-black border border-black px-6 py-3 rounded-lg text-lg font-semibold shadow hover:bg-gray-100 transition"
-          >
-            Post de Hoje
-            <div className="text-sm font-normal">Clique aqui</div>
-          </button>
-        </div>
-
         <MessageList
           messages={messages}
           isTyping={isTyping}
           isDarkMode={isDarkMode}
-          onSendMessage={handleRemarketing}
+          onSendMessage={(message) => setMessages((prev) => [...prev, message])}
+          onBackToMenu={handleBackToMenu}
         />
       </main>
 
-      <div
-        className={`border-t ${
-          isDarkMode
-            ? "border-gray-700 bg-gray-900"
-            : "border-gray-200 bg-white"
-        } flex-none`}
-      >
-        {/* 
-        Para reativar o envio de mensagens, descomente o bloco abaixo.
-        Isso exibirá o input no rodapé do chat novamente.
-      */}
-        {/* 
       <div
         className={`border-t ${
           isDarkMode
@@ -250,8 +163,6 @@ function ChatApp() {
             isDarkMode={isDarkMode}
           />
         </div>
-      </div>
-      */}
       </div>
     </div>
   );

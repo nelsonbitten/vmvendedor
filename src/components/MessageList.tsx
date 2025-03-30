@@ -1,14 +1,24 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ChatMessage } from "../types";
-import { Bot, User, Copy, Check, MessageSquare } from "lucide-react";
+import {
+  Bot,
+  User,
+  Copy,
+  Check,
+  MessageSquare,
+  BadgeHelp,
+  BookText,
+  Repeat,
+  Megaphone,
+} from "lucide-react";
 import TypingAnimation from "./TypingAnimation";
-import { supabase } from "../lib/supabaseClient";
 
 interface MessageListProps {
   messages: ChatMessage[];
   isTyping: boolean;
   isDarkMode: boolean;
   onSendMessage?: (message: ChatMessage) => void;
+  onBackToMenu?: () => void;
 }
 
 const MessageList: React.FC<MessageListProps> = ({
@@ -16,6 +26,7 @@ const MessageList: React.FC<MessageListProps> = ({
   isTyping,
   isDarkMode,
   onSendMessage,
+  onBackToMenu,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [copiedId, setCopiedId] = useState<number | null>(null);
@@ -39,81 +50,59 @@ const MessageList: React.FC<MessageListProps> = ({
   };
 
   const formatTime = (date: Date) => {
-    const options: Intl.DateTimeFormatOptions = {
+    return new Date(date).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
+    });
+  };
+
+  const handleMenuClick = (titulo: string) => {
+    const userMessage: ChatMessage = {
+      id: Date.now(),
+      text: `Quero ajuda com ${titulo}`,
+      sender: "user",
+      timestamp: new Date(),
     };
-    return new Date(date).toLocaleTimeString([], options);
+
+    const aiMessage: ChatMessage = {
+      id: Date.now() + 1,
+      text: "Qual o produto que você vende?",
+      sender: "ai",
+      timestamp: new Date(),
+    };
+
+    onSendMessage?.(userMessage);
+    setTimeout(() => {
+      onSendMessage?.(aiMessage);
+    }, 300);
   };
 
-  const formatDate = () => {
-    const today = new Date();
-
-    const formattedDate = today.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-    });
-
-    const weekday = today.toLocaleDateString("pt-BR", {
-      weekday: "long",
-    });
-
-    const capitalizedWeekday =
-      weekday.charAt(0).toUpperCase() + weekday.slice(1);
-
-    return (
-      <div
-        style={{
-          fontSize: "0.7rem", // Fonte menor
-          color: "#006400", // Verde escuro
-          backgroundColor: "#ccffcc", // Verde claro
-          padding: "2px 6px", // Espaço interno pequeno
-          borderRadius: "999px", // Borda super arredondada estilo cápsula
-          display: "inline-block",
-          fontFamily: "sans-serif",
-          lineHeight: "1", // Altura da linha mais compacta
-        }}
-      >
-        {`${formattedDate} - ${capitalizedWeekday}`}
-      </div>
-    );
-  };
-
-  const handleFetchRemarketing = async () => {
-    console.log("Função handleFetchRemarketing foi chamada!");
-    try {
-      const today = formatDate();
-      const { data, error } = await supabase
-        .from("conteudos")
-        .select("*")
-        .eq("type", "remarketing")
-        .eq("date", today)
-        .limit(1)
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        const novaMensagem: ChatMessage = {
-          id: Date.now(),
-          text: data.text,
-          sender: "ai",
-          timestamp: new Date(),
-          image: data.image || undefined,
-        };
-        onSendMessage?.(novaMensagem);
-      } else {
-        console.log("Nenhum remarketing encontrado.");
-      }
-    } catch (err) {
-      console.error("Erro ao buscar remarketing:", err);
-    }
-  };
-
-  const handleNewButtonClick = () => {
-    alert("Olá! Tudo bem?");
-  };
+  const menus = [
+    {
+      titulo: "Análise de Perfil",
+      descricao:
+        "Receba sugestões com base no seu perfil profissional ou de marca.",
+      icone: BadgeHelp,
+    },
+    {
+      titulo: "Gerador de Bio",
+      descricao:
+        "Crie uma biografia curta e eficaz para redes sociais ou sites.",
+      icone: BookText,
+    },
+    {
+      titulo: "Gerador de Remarketing",
+      descricao: "Gere textos estratégicos para reconquistar seus visitantes.",
+      icone: Repeat,
+    },
+    {
+      titulo: "Gerador de Copy",
+      descricao:
+        "Obtenha textos persuasivos para vender seu produto ou serviço.",
+      icone: Megaphone,
+    },
+  ];
 
   return (
     <div
@@ -121,6 +110,19 @@ const MessageList: React.FC<MessageListProps> = ({
         isDarkMode ? "bg-gray-900" : "bg-white"
       }`}
     >
+      {messages.length > 0 && (
+        <div className="mb-2">
+          <button
+            onClick={onBackToMenu}
+            className={`text-sm underline font-medium ${
+              isDarkMode ? "text-teal-400" : "text-teal-700"
+            } hover:opacity-80`}
+          >
+            ← Voltar ao menu inicial
+          </button>
+        </div>
+      )}
+
       {messages.length === 0 && (
         <div
           className={`text-center ${
@@ -136,75 +138,54 @@ const MessageList: React.FC<MessageListProps> = ({
           </div>
 
           <p
-            className={`text-lg font-medium mb-6 ${
+            className={`text-lg font-medium ${
               isDarkMode ? "text-gray-200" : "text-gray-800"
             }`}
           >
-            🚀 Post e Remarketing diário
+            🚀 Acelere suas vendas com IA
+          </p>
+          <p
+            className={`text-sm mb-6 ${
+              isDarkMode ? "text-gray-400" : "text-gray-600"
+            }`}
+          >
+            A ferramenta inteligente feita para vendedores.
           </p>
 
           <div className="max-w-2xl mx-auto space-y-3">
-            <button
-              onClick={handleFetchRemarketing}
-              className={`w-full p-4 rounded-xl border ${
-                isDarkMode
-                  ? "bg-gray-800 border-gray-700 hover:border-gray-600"
-                  : "bg-white border-gray-200 hover:border-gray-300"
-              } transition-all duration-200 group text-left flex items-start gap-3`}
-            >
-              <MessageSquare
-                className={`w-5 h-5 mt-1 ${
-                  isDarkMode ? "text-gray-400" : "text-gray-500"
-                }`}
-              />
-              <div>
-                <h3
-                  className={`font-medium mb-1 ${
-                    isDarkMode ? "text-gray-200" : "text-gray-700"
+            {menus.map(({ titulo, descricao, icone: Icon }, index) => (
+              <button
+                key={index}
+                onClick={() => handleMenuClick(titulo)}
+                className={`w-full p-4 rounded-xl border ${
+                  isDarkMode
+                    ? "bg-gray-800 border-gray-700 hover:border-gray-600"
+                    : "bg-white border-gray-200 hover:border-gray-300"
+                } transition-all duration-200 group text-left flex items-start gap-3`}
+              >
+                <Icon
+                  className={`w-5 h-5 mt-1 ${
+                    isDarkMode ? "text-gray-400" : "text-gray-500"
                   }`}
-                >
-                  Remarketing de Hoje - {formatDate()}
-                </h3>
-                <p
-                  className={`text-sm ${
-                    isDarkMode ? "text-gray-400" : "text-gray-600"
-                  }`}
-                >
-                  Clique aqui
-                </p>
-              </div>
-            </button>
-
-            <button
-              onClick={handleNewButtonClick}
-              className={`w-full p-4 rounded-xl border ${
-                isDarkMode
-                  ? "bg-gray-800 border-gray-700 hover:border-gray-600"
-                  : "bg-white border-gray-200 hover:border-gray-300"
-              } transition-all duration-200 group text-left flex items-start gap-3`}
-            >
-              <MessageSquare
-                className={`w-5 h-5 mt-1 ${
-                  isDarkMode ? "text-gray-400" : "text-gray-500"
-                }`}
-              />
-              <div>
-                <h3
-                  className={`font-medium mb-1 ${
-                    isDarkMode ? "text-gray-200" : "text-gray-700"
-                  }`}
-                >
-                  Post de Hoje {formatDate()}
-                </h3>
-                <p
-                  className={`text-sm ${
-                    isDarkMode ? "text-gray-400" : "text-gray-600"
-                  }`}
-                >
-                  Clique aqui
-                </p>
-              </div>
-            </button>
+                />
+                <div>
+                  <h3
+                    className={`font-medium mb-1 ${
+                      isDarkMode ? "text-gray-200" : "text-gray-700"
+                    }`}
+                  >
+                    {titulo}
+                  </h3>
+                  <p
+                    className={`text-sm ${
+                      isDarkMode ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
+                    {descricao}
+                  </p>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       )}
@@ -217,8 +198,12 @@ const MessageList: React.FC<MessageListProps> = ({
           }`}
         >
           {message.sender === "ai" && (
-            <div className="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center flex-shrink-0">
-              <Bot className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center flex-shrink-0 shadow">
+              <img
+                src="/logo.png"
+                alt="Logo"
+                className="w-7 h-7 rounded-full object-contain"
+              />
             </div>
           )}
 
@@ -242,14 +227,14 @@ const MessageList: React.FC<MessageListProps> = ({
                 <div className="mt-3">
                   <img
                     src={message.image}
-                    alt="Remarketing do dia"
+                    alt="Imagem"
                     className="rounded-lg max-w-full cursor-pointer hover:opacity-90 transition-opacity"
                     onClick={() => window.open(message.image, "_blank")}
                   />
                   <div className="mt-2">
                     <a
                       href={message.image}
-                      download="remarketing.jpg"
+                      download="imagem.jpg"
                       className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium ${
                         isDarkMode
                           ? "bg-gray-700 text-white hover:bg-gray-600"
