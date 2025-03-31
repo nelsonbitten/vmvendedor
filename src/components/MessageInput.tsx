@@ -14,24 +14,35 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const [image, setImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  // Função para submeter a mensagem
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() && !image) return;
 
+    // Verificar se a mensagem não está vazia ou se não tem imagem
+    if (!message.trim() && !image) {
+      alert("Por favor, digite uma mensagem ou envie uma imagem.");
+      return; // Não envia a mensagem se estiver vazia
+    }
+
+    // Envia a mensagem
     onSendMessage(message, image || undefined);
+
+    // Limpa o campo de mensagem e imagem
     setMessage("");
     setImage(null);
     setPreviewUrl(null);
   };
 
+  // Função para alterar a imagem
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selected = e.target.files[0];
       setImage(selected);
-      setPreviewUrl(URL.createObjectURL(selected));
+      setPreviewUrl(URL.createObjectURL(selected)); // Previsualiza a imagem
     }
   };
 
+  // Função para remover a imagem
   const removeImage = () => {
     setImage(null);
     setPreviewUrl(null);

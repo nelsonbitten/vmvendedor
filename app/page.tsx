@@ -40,34 +40,6 @@ export default function HomePage() {
     setDeferredPrompt(null);
   };
 
-  const handleSendMessage = (text: string, image?: File) => {
-    if (!text.trim() && !image) return;
-
-    const newMessage: ChatMessage = {
-      id: Date.now(),
-      text,
-      sender: "user",
-      timestamp: new Date(),
-      image: image ? URL.createObjectURL(image) : undefined,
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
-    setIsTyping(true);
-
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now() + 1,
-          text: "Recebido! Em breve analisaremos sua informação.",
-          sender: "ai",
-          timestamp: new Date(),
-        },
-      ]);
-      setIsTyping(false);
-    }, 600);
-  };
-
   const handleBackToMenu = () => {
     setMessages([]);
   };
@@ -79,7 +51,7 @@ export default function HomePage() {
       } overscroll-none`}
     >
       <header
-        className={`$${
+        className={`${
           isDarkMode
             ? "bg-gray-900 border-gray-700"
             : "bg-white border-gray-200"
@@ -97,7 +69,7 @@ export default function HomePage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsDarkMode(!isDarkMode)}
-                className={`$${
+                className={`${
                   isDarkMode
                     ? "text-gray-300 hover:text-white"
                     : "text-gray-600 hover:text-gray-800"
@@ -113,7 +85,7 @@ export default function HomePage() {
 
               <Link
                 href="/admin/painel"
-                className={`$${
+                className={`${
                   isDarkMode
                     ? "text-gray-300 hover:text-white"
                     : "text-gray-600 hover:text-gray-800"
@@ -156,7 +128,15 @@ export default function HomePage() {
       >
         <div className="max-w-4xl mx-auto p-4">
           <MessageInput
-            onSendMessage={handleSendMessage}
+            onSendMessage={(text) => {
+              const userMessage: ChatMessage = {
+                id: Date.now(),
+                text,
+                sender: "user",
+                timestamp: new Date(),
+              };
+              setMessages((prev) => [...prev, userMessage]);
+            }}
             isDarkMode={isDarkMode}
           />
         </div>
