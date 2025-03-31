@@ -1,13 +1,20 @@
+// src/App.tsx
 import React, { useState, useEffect } from "react";
-import { Download, Settings, Moon, Sun } from "lucide-react";
+import { Download, Moon, Sun } from "lucide-react";
 import { ChatMessage } from "./types";
-import MessageList from "./components/MessageList";
+import MessageList from "./components/MessageList31-03-final";
 import MessageInput from "./components/MessageInput";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import AdminPanel from "./admin/AdminPanel";
-import { Routes, Route, Link } from "react-router-dom";
+import Agente1Page from "./pages/agente1";
+import Agente2Page from "./pages/agente2";
+import Agente3Page from "./pages/agente3";
+import Agente4Page from "./pages/agente4";
+import AgentMenus from "./components/AgentMenus"; // ✅ importa os menus
+
 import ProtectedRoute from "./components/ProtectedRoute";
+import { Routes, Route, useLocation } from "react-router-dom";
 
 function ChatApp() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -15,6 +22,9 @@ function ChatApp() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // 👇 AQUI! Pega a URL atual
+  const location = useLocation();
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -73,66 +83,81 @@ function ChatApp() {
             : "bg-white border-gray-200"
         } border-b p-4 flex-none`}
       >
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between">
-            <h1
-              className={`text-2xl font-semibold ${
-                isDarkMode ? "text-white" : "text-gray-800"
-              } flex items-center gap-2`}
+        <div className="w-full flex items-center justify-between">
+          <h1
+            className={`text-2xl font-semibold ${
+              isDarkMode ? "text-white" : "text-gray-800"
+            }`}
+          >
+            NexOS
+          </h1>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className={`${
+                isDarkMode
+                  ? "text-gray-300 hover:text-white"
+                  : "text-gray-600 hover:text-gray-800"
+              } transition-colors`}
+              title={isDarkMode ? "Modo claro" : "Modo escuro"}
             >
-              NexOS
-            </h1>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                className={`${
-                  isDarkMode
-                    ? "text-gray-300 hover:text-white"
-                    : "text-gray-600 hover:text-gray-800"
-                } transition-colors`}
-                title={isDarkMode ? "Modo claro" : "Modo escuro"}
-              >
-                {isDarkMode ? (
-                  <Sun className="w-5 h-5" />
-                ) : (
-                  <Moon className="w-5 h-5" />
-                )}
-              </button>
-
-              <Link
-                to="/admin/painel"
-                className={`${
-                  isDarkMode
-                    ? "text-gray-300 hover:text-white"
-                    : "text-gray-600 hover:text-gray-800"
-                } transition-colors`}
-                title="Abrir Admin"
-              >
-                <Settings className="w-5 h-5" />
-              </Link>
-
-              {isInstallable && (
-                <button
-                  onClick={handleInstallClick}
-                  className="md:hidden flex items-center gap-1 bg-teal-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Instalar App
-                </button>
+              {isDarkMode ? (
+                <Sun className="w-5 h-5" />
+              ) : (
+                <Moon className="w-5 h-5" />
               )}
-            </div>
+            </button>
+
+            {isInstallable && (
+              <button
+                onClick={handleInstallClick}
+                className="md:hidden flex items-center gap-1 bg-teal-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Instalar App
+              </button>
+            )}
           </div>
         </div>
       </header>
 
       <main className="flex-1 overflow-hidden max-w-4xl w-full mx-auto relative">
-        <MessageList
-          messages={messages}
-          isTyping={isTyping}
-          isDarkMode={isDarkMode}
-          onSendMessage={(message) => setMessages((prev) => [...prev, message])}
-          onBackToMenu={handleBackToMenu}
-        />
+        <Routes>
+          <Route
+            path="/"
+            element={
+              messages.length === 0 ? (
+                <AgentMenus isDarkMode={isDarkMode} />
+              ) : (
+                <MessageList
+                  messages={messages}
+                  isTyping={isTyping}
+                  isDarkMode={isDarkMode}
+                  onSendMessage={(message) =>
+                    setMessages((prev) => [...prev, message])
+                  }
+                  onBackToMenu={handleBackToMenu}
+                />
+              )
+            }
+          />
+
+          <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route
+            path="/admin/painel"
+            element={
+              <ProtectedRoute>
+                <AdminPanel />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/agente1" element={<Agente1Page />} />
+          <Route path="/agente2" element={<Agente2Page />} />
+          <Route path="/agente3" element={<Agente3Page />} />
+          <Route path="/agente4" element={<Agente4Page />} />
+        </Routes>
       </main>
 
       <div
@@ -143,27 +168,16 @@ function ChatApp() {
         } flex-none`}
       >
         <div className="max-w-4xl mx-auto p-4">
-          <MessageInput isDarkMode={isDarkMode} />
+          {location.pathname.startsWith("/agente") && (
+            <MessageInput
+              isDarkMode={isDarkMode}
+              onSendMessage={handleSendMessage}
+            />
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-export default function App() {
-  return (
-    <Routes>
-      <Route path="/" element={<ChatApp />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/admin" element={<Admin />} />
-      <Route
-        path="/admin/painel"
-        element={
-          <ProtectedRoute>
-            <AdminPanel />
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
-  );
-}
+export default ChatApp;

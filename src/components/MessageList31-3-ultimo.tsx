@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { User, Bot, Copy, Check } from "lucide-react";
 import { ChatMessage } from "../types";
 import AgentMenus from "./AgentMenus";
@@ -9,28 +9,17 @@ import { useChatFlow } from "../hooks/useChatFlow";
 
 interface MessageListProps {
   isDarkMode: boolean;
-  stepInicial?: "analise_perfil" | "bio" | "remarketing" | "copywriting";
-  messages: ChatMessage[];
-  onSendMessage: (message: ChatMessage) => void;
-  isTyping: boolean;
-  onBackToMenu: () => void;
 }
 
-const MessageList: React.FC<MessageListProps> = ({
-  isDarkMode,
-  stepInicial,
-  messages,
-  onSendMessage,
-  isTyping,
-  onBackToMenu,
-}) => {
-  const [copiedId, setCopiedId] = React.useState<number | null>(null);
+const MessageList: React.FC<MessageListProps> = ({ isDarkMode }) => {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [isTyping, setIsTyping] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { step, handleMenuClick, handleUserMessage } = useChatFlow(
-    onSendMessage,
-    stepInicial
-  );
+  const { handleMenuClick, handleUserMessage } = useChatFlow((message) => {
+    setMessages((prev) => [...prev, message]);
+  });
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -46,6 +35,13 @@ const MessageList: React.FC<MessageListProps> = ({
     }
   };
 
+  const handleSend = async (text: string) => {
+    if (!text.trim()) return;
+    setIsTyping(true);
+    await handleUserMessage(text);
+    setIsTyping(false);
+  };
+
   const formatTime = (date: Date) =>
     new Date(date).toLocaleTimeString([], {
       hour: "2-digit",
@@ -55,22 +51,22 @@ const MessageList: React.FC<MessageListProps> = ({
 
   return (
     <div
-      className={`relative overflow-y-auto p-4 space-y-4 ${
+      className={`absolute inset-0 overflow-y-auto p-4 space-y-4 ${
         isDarkMode ? "bg-gray-900" : "bg-white"
       }`}
     >
-      {!step && messages.length === 0 && !stepInicial ? (
+      {messages.length === 0 ? (
         <AgentMenus onSelectAgent={handleMenuClick} isDarkMode={isDarkMode} />
-      ) : messages.length > 0 && !stepInicial ? (
+      ) : (
         <button
-          onClick={onBackToMenu}
+          onClick={() => setMessages([])}
           className={`text-sm underline font-medium ${
             isDarkMode ? "text-teal-400" : "text-teal-700"
           } hover:opacity-80`}
         >
           ← Voltar ao menu inicial
         </button>
-      ) : null}
+      )}
 
       {messages.map((message) => (
         <div
@@ -160,6 +156,44 @@ const MessageList: React.FC<MessageListProps> = ({
       )}
 
       <div ref={messagesEndRef} />
+
+      <div
+        className={`mt-4 border-t pt-4 ${
+          isDarkMode ? "border-gray-700" : "border-gray-200"
+        }`}
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const input = e.currentTarget.elements.namedItem(
+              "userInput"
+            ) as HTMLInputElement;
+            const value = input.value.trim();
+            if (value) {
+              handleSend(value);
+              input.value = "";
+            }
+          }}
+          className="flex gap-2 items-center"
+        >
+          <input
+            type="text"
+            name="userInput"
+            placeholder="Digite sua mensagem..."
+            className={`flex-1 px-4 py-2 rounded-lg border text-sm outline-none ${
+              isDarkMode
+                ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+                : "bg-white text-gray-800 border-gray-300 placeholder-gray-500"
+            }`}
+          />
+          <button
+            type="submit"
+            className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-900"
+          >
+            Enviar
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
