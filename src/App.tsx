@@ -42,7 +42,6 @@ function ChatApp() {
     setDeferredPrompt(null);
   };
 
-  // ✅ Atualizado para receber texto + imagem
   const handleSendMessage = (text: string, image?: File) => {
     if (!text.trim() && !image) return;
 
@@ -55,20 +54,6 @@ function ChatApp() {
     };
 
     setMessages((prev) => [...prev, newMessage]);
-    setIsTyping(true);
-
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now() + 1,
-          text: "Recebido! Em breve analisaremos sua informação.",
-          sender: "ai",
-          timestamp: new Date(),
-        },
-      ]);
-      setIsTyping(false);
-    }, 600);
   };
 
   const handleBackToMenu = () => {
@@ -158,10 +143,7 @@ function ChatApp() {
         } flex-none`}
       >
         <div className="max-w-4xl mx-auto p-4">
-          <MessageInput
-            onSendMessage={handleSendMessage}
-            isDarkMode={isDarkMode}
-          />
+          <MessageInput isDarkMode={isDarkMode} />
         </div>
       </div>
     </div>

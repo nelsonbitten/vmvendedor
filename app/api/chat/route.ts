@@ -9,6 +9,13 @@ export async function POST(req: NextRequest) {
   try {
     const { message } = await req.json();
 
+    if (!message || typeof message !== "string") {
+      return NextResponse.json(
+        { error: "Mensagem inválida ou ausente." },
+        { status: 400 }
+      );
+    }
+
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: message }],
@@ -17,10 +24,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       reply: completion.choices[0].message.content,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erro na rota /api/chat:", error);
     return NextResponse.json(
-      { error: "Erro ao gerar resposta da IA" },
+      {
+        error: "Erro ao gerar resposta da IA",
+        details: error?.message || "Erro desconhecido",
+      },
       { status: 500 }
     );
   }

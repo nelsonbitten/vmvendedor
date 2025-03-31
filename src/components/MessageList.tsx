@@ -31,6 +31,10 @@ const MessageList: React.FC<MessageListProps> = ({
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [step, setStep] = useState<
+    "analise_perfil" | "bio" | "remarketing" | "copywriting" | ""
+  >("");
+  const [product, setProduct] = useState<string>("");
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -60,37 +64,70 @@ const MessageList: React.FC<MessageListProps> = ({
 
   const sendMessageToAI = async (text: string) => {
     try {
-      const res = await fetch("/api/chat", {
+      const response = await fetch("http://localhost:3002/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text }),
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        return data.reply;
-      } else {
-        console.error("Erro da IA:", data.error);
-        return "Desculpe, ocorreu um erro ao gerar a resposta.";
-      }
+      const data = await response.json();
+      return data.response || data.reply || "Erro ao obter resposta.";
     } catch (err) {
       console.error("Erro na requisição:", err);
-      return "Não foi possível se comunicar com a IA.";
+      return "❌ Não foi possível se comunicar com a IA.";
     }
   };
 
-  const handleMenuClick = async (titulo: string) => {
+  const handleUserMessage = async (userMessageText: string) => {
     const userMessage: ChatMessage = {
       id: Date.now(),
-      text: `Quero ajuda com ${titulo}`,
+      text: userMessageText,
       sender: "user",
       timestamp: new Date(),
     };
 
     onSendMessage?.(userMessage);
 
-    const aiReply = await sendMessageToAI(userMessage.text);
+    let prompt = "";
+
+    switch (step) {
+      case "analise_perfil":
+        prompt = `O usuário está pedindo ajuda com análise de perfil. Ele disse: "${userMessageText}". Responda como um especialista em posicionamento digital.`;
+        break;
+
+      case "bio":
+        prompt = `Crie uma biografia curta e eficaz para redes sociais com base nisso: "${userMessageText}".`;
+        break;
+
+      case "copywriting":
+        prompt = `Crie um texto persuasivo para vender o seguinte produto ou serviço: "${userMessageText}".`;
+        break;
+
+      case "remarketing":
+        if (userMessageText.toLowerCase() === "sim") {
+          prompt = `Gere outro texto de remarketing para o produto: "${product}".`;
+        } else if (userMessageText.toLowerCase() === "não") {
+          const endMessage: ChatMessage = {
+            id: Date.now() + 1,
+            text: "Ok, se precisar de mais, é só chamar!",
+            sender: "ai",
+            timestamp: new Date(),
+          };
+          onSendMessage?.(endMessage);
+          setStep("");
+          return;
+        } else {
+          prompt = `Gere um texto de remarketing para o produto: "${userMessageText}".`;
+          setProduct(userMessageText);
+        }
+        break;
+
+      default:
+        prompt = userMessageText;
+        break;
+    }
+
+    const aiReply = await sendMessageToAI(prompt);
 
     const aiMessage: ChatMessage = {
       id: Date.now() + 1,
@@ -100,31 +137,121 @@ const MessageList: React.FC<MessageListProps> = ({
     };
 
     onSendMessage?.(aiMessage);
+
+    if (step === "remarketing") {
+      const moreMessage: ChatMessage = {
+        id: Date.now() + 2,
+        text: "Quer gerar mais um texto de remarketing?",
+        sender: "ai",
+        timestamp: new Date(),
+      };
+      onSendMessage?.(moreMessage);
+    }
+  };
+
+  const handleMenuClick = async (titulo: string) => {
+    let fluxo: typeof step = "";
+    let initialPrompt = "";
+
+    // Determinando o fluxo e o prompt com base no título do menu
+    switch (titulo) {
+      case "Analista de Perfis do Instagram":
+        fluxo = "analise_perfil";
+        initialPrompt =
+          "Você quer ajuda com análise de perfil pessoal ou profissional?";
+        break;
+      case "Criadora de Bio":
+        fluxo = "bio";
+        initialPrompt =
+          "Conte um pouco sobre você ou sua marca para eu gerar uma bio.";
+        break;
+      case "Especialista em Remarketing":
+        fluxo = "remarketing";
+        initialPrompt =
+          "Clique no produto para gerar o texto de remarketing:\n\n1. Maquininha Ton\n2. Produto A\n3. Produto B";
+        break;
+      case "Especialista em Copy":
+        fluxo = "copywriting";
+        initialPrompt =
+          "Digite o nome do produto ou serviço que deseja promover.";
+        break;
+      default:
+        fluxo = "";
+        initialPrompt = "Como posso te ajudar?";
+        break;
+    }
+
+    // Atualiza o estado de 'step' com o fluxo atual
+    setStep(fluxo);
+
+    // Criar a mensagem do usuário com o título correto
+    const userMessage: ChatMessage = {
+      id: Date.now(),
+      text: `Quero ajuda com ${titulo}`, // A mensagem enviada será o título do menu
+      sender: "user",
+      timestamp: new Date(),
+    };
+
+    // Criar a mensagem da IA com o prompt gerado com base no título do menu
+    const aiMessage: ChatMessage = {
+      id: Date.now() + 1,
+      text: initialPrompt, // A IA responderá com o prompt correto
+      sender: "ai",
+      timestamp: new Date(),
+    };
+
+    // Envia as mensagens para o fluxo de conversa
+    if (onSendMessage) {
+      onSendMessage(userMessage); // Envia a mensagem do usuário com o título do menu
+      onSendMessage(aiMessage); // Envia a resposta da IA com o prompt correspondente
+    }
+  };
+
+  const getRemarketingText = async (product: string) => {
+    const response = await fetch("http://localhost:3002/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: `Gerar texto de remarketing para o produto: ${product}`,
+      }),
+    });
+
+    const data = await response.json();
+    return data.response || data.reply || "Erro ao gerar texto de remarketing.";
   };
 
   const menus = [
     {
-      titulo: "Análise de Perfil",
+      titulo: "Analista de Perfis do Instagram",
       descricao:
-        "Receba sugestões com base no seu perfil profissional ou de marca.",
+        "Analisarei seu perfil no Instagram e darei sugestões para impulsionar sua presença online.",
       icone: BadgeHelp,
+      imagem: "/agente1.png", // Primeiro agente
+      nome: "Bia",
     },
     {
-      titulo: "Gerador de Bio",
+      titulo: "Criadora de Bio",
       descricao:
-        "Crie uma biografia curta e eficaz para redes sociais ou sites.",
+        "Crio uma bio impactante e única que vai destacar você nas redes sociais.",
       icone: BookText,
+      imagem: "/agente2.png", // Segundo agente
+      nome: "Maria",
     },
     {
-      titulo: "Gerador de Remarketing",
-      descricao: "Gere textos estratégicos para reconquistar seus visitantes.",
-      icone: Repeat,
-    },
-    {
-      titulo: "Gerador de Copy",
+      titulo: "Especialista em Remarketing",
       descricao:
-        "Obtenha textos persuasivos para vender seu produto ou serviço.",
+        "Crio mensagens estratégicas para manter leads engajados e prontos para a compra.",
+      icone: Repeat,
+      imagem: "/agente3.png", // Terceiro agente
+      nome: "Joana",
+    },
+    {
+      titulo: "Especialista em Copy",
+      descricao:
+        "Transformo ideias em palavras persuasivas que vendem e engajam.",
       icone: Megaphone,
+      imagem: "/agente4.png", // Quarto agente
+      nome: "Carlos",
     },
   ];
 
@@ -160,7 +287,6 @@ const MessageList: React.FC<MessageListProps> = ({
               className="w-16 h-16 rounded-full object-contain bg-white dark:bg-gray-800 shadow"
             />
           </div>
-
           <p
             className={`text-lg font-medium ${
               isDarkMode ? "text-gray-200" : "text-gray-800"
@@ -177,44 +303,56 @@ const MessageList: React.FC<MessageListProps> = ({
           </p>
 
           <div className="max-w-2xl mx-auto space-y-3">
-            {menus.map(({ titulo, descricao, icone: Icon }, index) => (
-              <button
-                key={index}
-                onClick={() => handleMenuClick(titulo)}
-                className={`w-full p-4 rounded-xl border ${
-                  isDarkMode
-                    ? "bg-gray-800 border-gray-700 hover:border-gray-600"
-                    : "bg-white border-gray-200 hover:border-gray-300"
-                } transition-all duration-200 group text-left flex items-start gap-3`}
-              >
-                <Icon
-                  className={`w-5 h-5 mt-1 ${
-                    isDarkMode ? "text-gray-400" : "text-gray-500"
-                  }`}
-                />
-                <div>
-                  <h3
-                    className={`font-medium mb-1 ${
-                      isDarkMode ? "text-gray-200" : "text-gray-700"
-                    }`}
-                  >
-                    {titulo}
-                  </h3>
-                  <p
-                    className={`text-sm ${
-                      isDarkMode ? "text-gray-400" : "text-gray-600"
-                    }`}
-                  >
-                    {descricao}
-                  </p>
-                </div>
-              </button>
-            ))}
+            {menus.map(
+              ({ titulo, descricao, icone: Icon, imagem, nome }, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleMenuClick(titulo)}
+                  className={`w-full p-4 rounded-xl border ${
+                    isDarkMode
+                      ? "bg-gray-800 border-gray-700 hover:border-gray-600"
+                      : "bg-white border-gray-200 hover:border-gray-300"
+                  } transition-all duration-200 group text-left flex items-start gap-3`}
+                >
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={imagem}
+                      alt={nome}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div className="flex flex-col">
+                      {/* Nome do agente ao lado do título */}
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="bg-green-100 text-green-800 rounded-full px-2 py-1 text-xs"
+                          style={{ whiteSpace: "nowrap" }}
+                        >
+                          {nome}
+                        </span>
+                        <h3
+                          className={`font-medium ${
+                            isDarkMode ? "text-gray-200" : "text-gray-700"
+                          }`}
+                        >
+                          {titulo}
+                        </h3>
+                      </div>
+                      <p
+                        className={`text-sm ${
+                          isDarkMode ? "text-gray-400" : "text-gray-600"
+                        }`}
+                      >
+                        {descricao}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              )
+            )}
           </div>
         </div>
       )}
 
-      {/* mensagens */}
       {messages.map((message) => (
         <div
           key={message.id}
@@ -247,30 +385,6 @@ const MessageList: React.FC<MessageListProps> = ({
               <p className="text-[15px] leading-relaxed whitespace-pre-wrap pr-8">
                 {message.text}
               </p>
-
-              {message.image && (
-                <div className="mt-3">
-                  <img
-                    src={message.image}
-                    alt="Imagem"
-                    className="rounded-lg max-w-full cursor-pointer hover:opacity-90 transition-opacity"
-                    onClick={() => window.open(message.image, "_blank")}
-                  />
-                  <div className="mt-2">
-                    <a
-                      href={message.image}
-                      download="imagem.jpg"
-                      className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-sm font-medium ${
-                        isDarkMode
-                          ? "bg-gray-700 text-white hover:bg-gray-600"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      } transition-colors`}
-                    >
-                      ⬇️ Baixar imagem
-                    </a>
-                  </div>
-                </div>
-              )}
 
               <span
                 className={`text-[11px] sm:text-xs mt-2 block ${
@@ -328,6 +442,44 @@ const MessageList: React.FC<MessageListProps> = ({
       )}
 
       <div ref={messagesEndRef} />
+
+      <div
+        className={`mt-4 border-t pt-4 ${
+          isDarkMode ? "border-gray-700" : "border-gray-200"
+        }`}
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const input = e.currentTarget.elements.namedItem(
+              "userInput"
+            ) as HTMLInputElement;
+            const value = input.value.trim();
+            if (value) {
+              handleUserMessage(value);
+              input.value = "";
+            }
+          }}
+          className="flex gap-2 items-center"
+        >
+          <input
+            type="text"
+            name="userInput"
+            placeholder="Digite sua mensagem..."
+            className={`flex-1 px-4 py-2 rounded-lg border text-sm outline-none ${
+              isDarkMode
+                ? "bg-gray-800 text-white border-gray-600 placeholder-gray-400"
+                : "bg-white text-gray-800 border-gray-300 placeholder-gray-500"
+            }`}
+          />
+          <button
+            type="submit"
+            className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-900"
+          >
+            Enviar
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
