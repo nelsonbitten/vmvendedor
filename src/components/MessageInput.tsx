@@ -1,8 +1,9 @@
+// src/components/MessageInput.tsx
 import React, { useState } from "react";
 import { Send } from "lucide-react";
 
 interface MessageInputProps {
-  onSendMessage: (message: string, image?: File) => void; // mantém a tipagem original
+  onSendMessage: (text: string, image?: File) => void;
   isDarkMode: boolean;
 }
 
@@ -17,7 +18,9 @@ const MessageInput: React.FC<MessageInputProps> = ({
 
     if (!message.trim()) return;
 
-    onSendMessage(message); // envia só o texto
+    console.log("📨 Enviando mensagem do input:", message); // ✅ DEBUG
+
+    onSendMessage(message);
     setMessage("");
   };
 

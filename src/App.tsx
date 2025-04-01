@@ -1,4 +1,3 @@
-// src/App.tsx
 import React, { useState, useEffect } from "react";
 import { Download, Moon, Sun } from "lucide-react";
 import { ChatMessage } from "./types";
@@ -11,10 +10,10 @@ import Agente1Page from "./pages/agente1";
 import Agente2Page from "./pages/agente2";
 import Agente3Page from "./pages/agente3";
 import Agente4Page from "./pages/agente4";
-import AgentMenus from "./components/AgentMenus"; // ✅ importa os menus
-
+import AgentMenus from "./components/AgentMenus";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Routes, Route, useLocation } from "react-router-dom";
+import { useChatFlow } from "./hooks/useChatFlow";
 
 function ChatApp() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -23,8 +22,13 @@ function ChatApp() {
   const [isInstallable, setIsInstallable] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // 👇 AQUI! Pega a URL atual
   const location = useLocation();
+
+  const { step, setStep, handleMenuClick, handleUserMessage } = useChatFlow(
+    (message) => {
+      setMessages((prev) => [...prev, message]);
+    }
+  );
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -52,18 +56,16 @@ function ChatApp() {
     setDeferredPrompt(null);
   };
 
-  const handleSendMessage = (text: string, image?: File) => {
+  const handleSendMessage = (input: string | ChatMessage, image?: File) => {
+    const text = typeof input === "string" ? input : input.text;
+
+    // ✅ Evita mensagens vazias
     if (!text.trim() && !image) return;
 
-    const newMessage: ChatMessage = {
-      id: Date.now(),
-      text,
-      sender: "user",
-      timestamp: new Date(),
-      image: image ? URL.createObjectURL(image) : undefined,
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
+    // ✅ Só chama o fluxo se for texto puro
+    if (typeof input === "string") {
+      handleUserMessage(text); // 🔥 isso já adiciona a mensagem e chama a IA
+    }
   };
 
   const handleBackToMenu = () => {
@@ -134,9 +136,7 @@ function ChatApp() {
                   messages={messages}
                   isTyping={isTyping}
                   isDarkMode={isDarkMode}
-                  onSendMessage={(message) =>
-                    setMessages((prev) => [...prev, message])
-                  }
+                  onSendMessage={handleSendMessage}
                   onBackToMenu={handleBackToMenu}
                 />
               )
@@ -153,10 +153,63 @@ function ChatApp() {
               </ProtectedRoute>
             }
           />
-          <Route path="/agente1" element={<Agente1Page />} />
-          <Route path="/agente2" element={<Agente2Page />} />
-          <Route path="/agente3" element={<Agente3Page />} />
-          <Route path="/agente4" element={<Agente4Page />} />
+
+          {/* ✅ Agentes com stepInicial configurado */}
+          <Route
+            path="/agente1"
+            element={
+              <Agente1Page
+                stepInicial="legendas" // ✅ Agora Kora se comporta como especialista em legendas
+                messages={messages}
+                isTyping={isTyping}
+                isDarkMode={isDarkMode}
+                onSendMessage={handleSendMessage}
+                onBackToMenu={handleBackToMenu}
+              />
+            }
+          />
+
+          <Route
+            path="/agente2"
+            element={
+              <Agente2Page
+                messages={messages}
+                isTyping={isTyping}
+                isDarkMode={isDarkMode}
+                onSendMessage={handleSendMessage}
+                onBackToMenu={handleBackToMenu}
+                stepInicial="bio"
+              />
+            }
+          />
+
+          <Route
+            path="/agente3"
+            element={
+              <Agente3Page
+                messages={messages}
+                isTyping={isTyping}
+                isDarkMode={isDarkMode}
+                onSendMessage={handleSendMessage}
+                onBackToMenu={handleBackToMenu}
+                stepInicial="remarketing"
+              />
+            }
+          />
+
+          <Route
+            path="/agente4"
+            element={
+              <Agente4Page
+                messages={messages}
+                isTyping={isTyping}
+                isDarkMode={isDarkMode}
+                onSendMessage={handleSendMessage}
+                onBackToMenu={handleBackToMenu}
+                stepInicial="copywriting"
+              />
+            }
+          />
         </Routes>
       </main>
 
@@ -167,14 +220,7 @@ function ChatApp() {
             : "border-gray-200 bg-white"
         } flex-none`}
       >
-        <div className="max-w-4xl mx-auto p-4">
-          {location.pathname.startsWith("/agente") && (
-            <MessageInput
-              isDarkMode={isDarkMode}
-              onSendMessage={handleSendMessage}
-            />
-          )}
-        </div>
+        <div className="max-w-4xl mx-auto p-4" />
       </div>
     </div>
   );
