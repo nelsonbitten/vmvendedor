@@ -1,6 +1,8 @@
 // src/services/api.ts
 
 export async function sendMessageToAI(message: string): Promise<string> {
+  console.log("📡 Enviando para backend:", message); // 👉 Adicionado aqui
+
   try {
     const response = await fetch("http://localhost:3002/api/chat", {
       method: "POST",

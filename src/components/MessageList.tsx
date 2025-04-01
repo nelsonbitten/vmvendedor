@@ -6,6 +6,7 @@ import { ChatMessage } from "../types";
 import AgentMenus from "./AgentMenus";
 import TypingAnimation from "./TypingAnimation";
 import { useChatFlow } from "../hooks/useChatFlow";
+import { useLocation } from "react-router-dom";
 
 interface MessageListProps {
   isDarkMode: boolean;
@@ -27,10 +28,12 @@ const MessageList: React.FC<MessageListProps> = ({
   const [copiedId, setCopiedId] = React.useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { step, handleMenuClick, handleUserMessage } = useChatFlow(
-    onSendMessage,
-    stepInicial
-  );
+  const location = useLocation();
+
+  const { step, handleMenuClick } = useChatFlow(onSendMessage, stepInicial);
+
+  // ✅ Log do fluxo atual
+  console.log("📍 Fluxo atual (step):", step);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -55,23 +58,19 @@ const MessageList: React.FC<MessageListProps> = ({
 
   return (
     <div
-      className={`relative overflow-y-auto p-4 space-y-4 ${
+      className={`relative overflow-y-auto px-6 sm:px-10 py-4 space-y-4 ${
         isDarkMode ? "bg-gray-900" : "bg-white"
       }`}
     >
-      {!step && messages.length === 0 && !stepInicial ? (
-        <AgentMenus onSelectAgent={handleMenuClick} isDarkMode={isDarkMode} />
-      ) : messages.length > 0 && !stepInicial ? (
-        <button
-          onClick={onBackToMenu}
-          className={`text-sm underline font-medium ${
-            isDarkMode ? "text-teal-400" : "text-teal-700"
-          } hover:opacity-80`}
-        >
-          ← Voltar ao menu inicial
-        </button>
-      ) : null}
+      {/* ✅ MOSTRA MENU SÓ NA HOME "/" */}
+      {location.pathname === "/" &&
+        !step &&
+        messages.length === 0 &&
+        !stepInicial && (
+          <AgentMenus onSelectAgent={handleMenuClick} isDarkMode={isDarkMode} />
+        )}
 
+      {/* Lista de mensagens */}
       {messages.map((message) => (
         <div
           key={message.id}
@@ -142,6 +141,7 @@ const MessageList: React.FC<MessageListProps> = ({
         </div>
       ))}
 
+      {/* Animação de digitando */}
       {isTyping && (
         <div className="flex items-start gap-3">
           <div className="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center">

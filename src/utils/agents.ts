@@ -3,9 +3,8 @@ import { BadgeHelp, BookText, Repeat, Megaphone } from "lucide-react";
 
 export const agents = [
   {
-    titulo: "Analista de Perfis do Instagram",
-    descricao:
-      "Analisarei seu perfil no Instagram e darei sugestões para impulsionar sua presença online.",
+    titulo: "Especialista em Legendas",
+    descricao: "Crio legendas impactantes para suas redes sociais.",
     icone: BadgeHelp,
     imagem: "/agente1.png",
     nome: "Kora",

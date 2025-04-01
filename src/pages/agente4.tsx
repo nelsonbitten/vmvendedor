@@ -1,61 +1,82 @@
-import React, { useState } from "react";
-import AgentHeader from "../components/AgentHeader";
-import MessageList from "../components/MessageList";
-import { useNavigate } from "react-router-dom";
+import React from "react";
 import { ChatMessage } from "../types";
+import MessageList from "../components/MessageList";
+import MessageInput from "../components/MessageInput";
+import { useNavigate } from "react-router-dom"; // ✅ IMPORTADO
 
-export default function Agente4Page() {
-  const isDarkMode = false;
-  const navigate = useNavigate();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+interface Agente4PageProps {
+  messages: ChatMessage[];
+  isTyping: boolean;
+  isDarkMode: boolean;
+  onSendMessage: (text: string, image?: File) => void;
+  onBackToMenu: () => void;
+}
+
+const Agente4Page: React.FC<Agente4PageProps> = ({
+  messages,
+  isTyping,
+  isDarkMode,
+  onSendMessage,
+  onBackToMenu,
+}) => {
+  const navigate = useNavigate(); // ✅ HOOK DE NAVEGAÇÃO
 
   return (
-    <div
-      className={`min-h-screen max-h-screen flex flex-col ${
-        isDarkMode ? "bg-gray-900" : "bg-white"
-      }`}
-    >
-      {/* Cabeçalho fixo no topo com sticky */}
-      <div
-        className={`sticky top-0 z-10 p-4 backdrop-blur-md ${
-          isDarkMode ? "bg-gray-900/80" : "bg-white/80"
-        }`}
-      >
-        <div className="max-w-3xl mx-auto">
-          <button
-            onClick={() => navigate("/")}
-            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-all border mb-3 ${
-              isDarkMode
-                ? "bg-gray-800 text-teal-400 border-gray-700 hover:bg-gray-700"
-                : "bg-white text-teal-700 border-gray-300 hover:bg-gray-100"
-            }`}
-          >
-            <span className="text-sm">←</span> Voltar
-          </button>
+    <div className="flex flex-col h-full">
+      {/* 🔙 Botão Voltar */}
+      <div className="p-4">
+        <button
+          onClick={() => {
+            onBackToMenu();
+            navigate("/");
+          }}
+          className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+        >
+          <span className="text-lg">←</span> Voltar
+        </button>
+      </div>
 
-          <AgentHeader
-            nome="Sofi"
-            especialidade="Especialista em Copy"
-            descricao="Transformo ideias em palavras que vendem e engajam."
-            imagem="/agente4.png"
-            isDarkMode={isDarkMode}
-          />
+      {/* Card do agente */}
+      <div className="p-4 pt-0">
+        <div className="bg-yellow-100 shadow-md p-4 rounded-xl flex items-center gap-4">
+          <div className="relative">
+            <img
+              src="/agente4.webp"
+              alt="Sofi"
+              className="w-14 h-14 rounded-full object-cover"
+            />
+            {/* Bolinha online piscando */}
+            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full animate-ping z-10"></span>
+            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full z-20"></span>
+          </div>
+
+          <div>
+            <h2 className="text-lg font-semibold text-gray-800">Sofi</h2>
+            <p className="text-sm text-green-600 font-medium">Online</p>
+            <p className="text-sm text-gray-600">
+              Transformo ideias em palavras persuasivas que vendem e engajam.
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Chat ocupando o restante da tela com rolagem */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4">
-        <div className="max-w-3xl mx-auto">
-          <MessageList
-            isDarkMode={isDarkMode}
-            stepInicial="copywriting"
-            messages={messages}
-            onSendMessage={(msg) => setMessages((prev) => [...prev, msg])}
-            isTyping={false}
-            onBackToMenu={() => navigate("/")}
-          />
-        </div>
+      {/* Lista de mensagens */}
+      <div className="flex-1 overflow-y-auto">
+        <MessageList
+          messages={messages}
+          isTyping={isTyping}
+          isDarkMode={isDarkMode}
+          onSendMessage={onSendMessage}
+          onBackToMenu={onBackToMenu}
+        />
+      </div>
+
+      {/* Campo de digitação */}
+      <div className="p-4 border-t">
+        <MessageInput isDarkMode={isDarkMode} onSendMessage={onSendMessage} />
       </div>
     </div>
   );
-}
+};
+
+export default Agente4Page;
