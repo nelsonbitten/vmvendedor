@@ -34,7 +34,7 @@ export default function Agente3Page() {
           </button>
 
           <AgentHeader
-            nome="Joana"
+            nome="Luma"
             especialidade="Especialista em Remarketing"
             descricao="Crio mensagens estratégicas para manter leads engajados e prontos pra comprar."
             imagem="/agente3.png"

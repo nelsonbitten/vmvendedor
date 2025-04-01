@@ -34,7 +34,7 @@ export default function Agente2Page() {
           </button>
 
           <AgentHeader
-            nome="Maria"
+            nome="Ayra"
             especialidade="Criadora de Bio"
             descricao="Crio bios impactantes e criativas para redes sociais."
             imagem="/agente2.png"

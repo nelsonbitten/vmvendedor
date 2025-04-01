@@ -8,7 +8,7 @@ export const agents = [
       "Analisarei seu perfil no Instagram e darei sugestões para impulsionar sua presença online.",
     icone: BadgeHelp,
     imagem: "/agente1.png",
-    nome: "Bia",
+    nome: "Kora",
   },
   {
     titulo: "Criadora de Bio",
@@ -16,7 +16,7 @@ export const agents = [
       "Crio uma bio impactante e única que vai destacar você nas redes sociais.",
     icone: BookText,
     imagem: "/agente2.png",
-    nome: "Maria",
+    nome: "Ayra",
   },
   {
     titulo: "Especialista em Remarketing",
@@ -24,7 +24,7 @@ export const agents = [
       "Crio mensagens estratégicas para manter leads engajados e prontos para a compra.",
     icone: Repeat,
     imagem: "/agente3.png",
-    nome: "Joana",
+    nome: "Luma",
   },
   {
     titulo: "Especialista em Copy",
@@ -32,6 +32,6 @@ export const agents = [
       "Transformo ideias em palavras persuasivas que vendem e engajam.",
     icone: Megaphone,
     imagem: "/agente4.png",
-    nome: "Carlos",
+    nome: "Sofi",
   },
 ];
