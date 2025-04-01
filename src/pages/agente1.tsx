@@ -35,7 +35,7 @@ export default function Agente1Page() {
           </button>
 
           <AgentHeader
-            nome="Bia"
+            nome="Kora"
             especialidade="Analista de Perfis do Instagram"
             descricao="Especialista em posicionamento digital e branding pessoal."
             imagem="/agente1.png"

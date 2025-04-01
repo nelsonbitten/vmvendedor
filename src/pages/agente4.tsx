@@ -34,7 +34,7 @@ export default function Agente4Page() {
           </button>
 
           <AgentHeader
-            nome="Carlos"
+            nome="Sofi"
             especialidade="Especialista em Copy"
             descricao="Transformo ideias em palavras que vendem e engajam."
             imagem="/agente4.png"
