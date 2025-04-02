@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaClipboard, FaClipboardCheck } from "react-icons/fa"; // Ícones de copiar e confirmação
 import { ChatMessage } from "../types";
-import MessageList from "../components/MessageList";
 import remarketingList from "../data/remarketingList"; // arquivo externo com as mensagens
 
 const Agente3Page: React.FC = () => {
@@ -11,6 +11,7 @@ const Agente3Page: React.FC = () => {
   const [ultimaEntradaValida, setUltimaEntradaValida] = useState<string | null>(
     null
   );
+  const [copied, setCopied] = useState<boolean>(false); // Estado para exibir a notificação de copiado
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,16 +30,6 @@ const Agente3Page: React.FC = () => {
 
   const handleSendMessage = async (entradaUsuario: string) => {
     const textoLimpo = entradaUsuario.trim().toLowerCase();
-    const irrelevantes = [
-      "oi",
-      "olá",
-      "tudo bem",
-      "ok",
-      "quero",
-      "sim",
-      "não",
-      "me ajuda",
-    ];
     const pedidoNovaVersao = [
       "quero outra",
       "outra",
@@ -98,6 +89,14 @@ const Agente3Page: React.FC = () => {
 
     setMessages((prev) => [...prev, aiMessage, followUp]);
     setIsTyping(false);
+  };
+
+  // Função para copiar a mensagem para a área de transferência
+  const handleCopyMessage = (messageText: string) => {
+    navigator.clipboard.writeText(messageText).then(() => {
+      setCopied(true); // Exibe a confirmação de copiado
+      setTimeout(() => setCopied(false), 2000); // Reseta o estado após 2 segundos
+    });
   };
 
   // Função para gerar o remarketing de hoje quando o botão for clicado
@@ -167,6 +166,18 @@ const Agente3Page: React.FC = () => {
                 <p className="pr-8">{message.text}</p>
               </div>
             </div>
+            {message.sender === "ai" && (
+              <div
+                onClick={() => handleCopyMessage(message.text)}
+                className="cursor-pointer ml-2"
+              >
+                {copied ? (
+                  <FaClipboardCheck className="text-green-500" />
+                ) : (
+                  <FaClipboard className="text-gray-600" />
+                )}
+              </div>
+            )}
             {message.sender === "user" && (
               <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm font-semibold">
                 EU
@@ -182,7 +193,6 @@ const Agente3Page: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Substituindo o campo de input por um único botão */}
       <div className="p-4 border-t">
         <button
           onClick={handleGenerateRemarketing}
