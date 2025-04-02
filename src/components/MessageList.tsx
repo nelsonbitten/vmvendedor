@@ -30,7 +30,12 @@ const MessageList: React.FC<MessageListProps> = ({
 
   const location = useLocation();
 
-  const { step, handleMenuClick } = useChatFlow(onSendMessage, stepInicial);
+  // ✅ Função adaptadora para permitir ChatMessage → string
+  const handleSendMessage = (message: ChatMessage) => {
+    onSendMessage(message); // passa o objeto completo
+  };
+
+  const { step, handleMenuClick } = useChatFlow(handleSendMessage, stepInicial);
 
   // ✅ Log do fluxo atual
   console.log("📍 Fluxo atual (step):", step);

@@ -1,14 +1,9 @@
 import { useState, useEffect } from "react";
 import { ChatMessage } from "../types";
 import { sendMessageToAI } from "../services/api";
+import { agents } from "../agents";
 
-type Step =
-  | "analise_perfil"
-  | "bio"
-  | "remarketing"
-  | "copywriting"
-  | "legendas"
-  | "";
+type Step = keyof typeof agents | "";
 
 export function useChatFlow(
   onSendMessage?: (message: ChatMessage) => void,
@@ -22,17 +17,9 @@ export function useChatFlow(
       setStep(stepInicial);
 
       const initialPrompt =
-        stepInicial === "legendas"
-          ? "Oi! 😊 Me conta qual é o nicho do seu perfil ou o tema da legenda que você quer criar?"
-          : stepInicial === "analise_perfil"
-          ? "Você quer ajuda com análise de perfil pessoal ou profissional?"
-          : stepInicial === "bio"
-          ? "Conte um pouco sobre você ou sua marca para eu gerar uma bio."
-          : stepInicial === "copywriting"
-          ? "Digite o nome do produto ou serviço que deseja promover."
-          : stepInicial === "remarketing"
-          ? "Clique no produto para gerar o texto de remarketing:\n\n1. Maquininha Ton\n2. Produto A\n3. Produto B"
-          : "Como posso te ajudar?";
+        agents[stepInicial]?.initialPrompt || "Como posso te ajudar?";
+
+      console.log("📩 Prompt inicial do agente:", initialPrompt);
 
       onSendMessage?.({
         id: Date.now(),
@@ -52,55 +39,82 @@ export function useChatFlow(
     };
 
     onSendMessage?.(userMessage);
+    console.log("🧠 agents disponíveis:", agents);
 
     let prompt = "";
 
-    switch (step) {
-      case "legendas":
-        prompt = `
-Você é Kora, uma especialista em criar **legendas criativas, envolventes e estratégicas** para Instagram e outras redes sociais.
+    const chave: Step = (step || stepInicial) as Step;
+    const validKeys = Object.keys(agents);
 
-Sua missão é ajudar criadores e negócios a se destacarem através de textos curtos, impactantes, sempre com **emojis** e **hashtags relevantes**.
+    const agenteAtivo = agents[chave];
 
-⚠️ IMPORTANTE: Você **NUNCA responde sobre outros assuntos**. Se o cliente pedir algo fora de legendas para redes sociais, diga gentilmente que só trabalha com isso.
+    // ⚠️ Fluxo especial da Ayra (bio para Instagram)
+    if (step === "bio") {
+      prompt = `
+Você é especialista em criar bios para perfis do Instagram. 
 
-Agora, com base no que o cliente disse: "${userMessageText}", crie uma legenda personalizada.`;
-        break;
+Objetivo:
+- Criar bios criativas, diretas e alinhadas ao que o usuário faz
+- Sempre usar emojis (sem exageros)
+- Incluir uma CTA (ex: “Clique no link”, “Saiba mais”, “Acesse agora”)
+- Bio com no máximo 150 caracteres
+- Sem hashtags
+- Não use travessão no início
+- A resposta deve conter apenas a bio, sem explicações adicionais
 
-      case "analise_perfil":
-        prompt = `O usuário está pedindo ajuda com análise de perfil. Ele disse: "${userMessageText}". Responda como um especialista em posicionamento digital.`;
-        break;
+Contexto do usuário: "${userMessageText}"
 
-      case "bio":
-        prompt = `Crie uma biografia curta e eficaz para redes sociais com base nisso: "${userMessageText}".`;
-        break;
+No final, sugira com gentileza que podemos ajustar ou criar outra versão se ele quiser.
+`;
 
-      case "copywriting":
-        prompt = `Crie um texto persuasivo para vender o seguinte produto ou serviço: "${userMessageText}".`;
-        break;
+      console.log("✨ Prompt para Ayra:", prompt);
 
-      case "remarketing":
-        if (userMessageText.toLowerCase() === "sim") {
-          prompt = `Gere outro texto de remarketing para o produto: "${product}".`;
-        } else if (userMessageText.toLowerCase() === "não") {
-          onSendMessage?.({
-            id: Date.now() + 1,
-            text: "Ok, se precisar de mais, é só chamar!",
-            sender: "ai",
-            timestamp: new Date(),
-          });
-          setStep("");
-          return;
-        } else {
-          prompt = `Gere um texto de remarketing para o produto: "${userMessageText}".`;
-          setProduct(userMessageText);
-        }
-        break;
+      const aiReply = await sendMessageToAI(prompt);
 
-      default:
-        prompt = userMessageText;
-        break;
+      onSendMessage?.({
+        id: Date.now() + 1,
+        text: aiReply,
+        sender: "ai",
+        timestamp: new Date(),
+      });
+
+      onSendMessage?.({
+        id: Date.now() + 2,
+        text: "Se quiser ajustar ou criar outra versão, é só me falar! 💬",
+        sender: "ai",
+        timestamp: new Date(),
+      });
+
+      return;
     }
+
+    // 🟡 Fluxo padrão de remarketing
+    if (step === "remarketing") {
+      const lowerText = userMessageText.toLowerCase();
+      if (lowerText === "sim") {
+        prompt = `Gere outro texto de remarketing para o produto: "${product}".`;
+      } else if (lowerText === "não") {
+        onSendMessage?.({
+          id: Date.now() + 1,
+          text: "Ok, se precisar de mais, é só chamar!",
+          sender: "ai",
+          timestamp: new Date(),
+        });
+        setStep("");
+        return;
+      } else {
+        prompt = `Gere um texto de remarketing para o produto: "${userMessageText}".`;
+        setProduct(userMessageText);
+      }
+    } else if (agenteAtivo?.generatePrompt) {
+      prompt = agenteAtivo.generatePrompt(userMessageText);
+      console.log("📬 Prompt gerado pelo agente:", prompt);
+    } else {
+      prompt = userMessageText;
+      console.warn("⚠️ Nenhum generatePrompt encontrado. Usando texto cru.");
+    }
+
+    console.log("🔧 Prompt final enviado para IA:", prompt);
 
     const aiReply = await sendMessageToAI(prompt);
 
@@ -122,42 +136,32 @@ Agora, com base no que o cliente disse: "${userMessageText}", crie uma legenda p
   };
 
   const handleMenuClick = (titulo: string) => {
-    let fluxo: Step = "";
-    let initialPrompt = "";
+    console.log("🔁 Título clicado:", titulo);
 
+    let fluxo: Step = "";
     switch (titulo) {
       case "Especialista em Legendas":
         fluxo = "legendas";
-        initialPrompt =
-          "Oi! 😊 Me conta qual é o nicho do seu perfil ou o tema da legenda que você quer criar?";
-        break;
-      case "Analista de Perfis do Instagram":
-        fluxo = "analise_perfil";
-        initialPrompt =
-          "Você quer ajuda com análise de perfil pessoal ou profissional?";
         break;
       case "Criadora de Bio":
         fluxo = "bio";
-        initialPrompt =
-          "Conte um pouco sobre você ou sua marca para eu gerar uma bio.";
         break;
       case "Especialista em Remarketing":
         fluxo = "remarketing";
-        initialPrompt =
-          "Clique no produto para gerar o texto de remarketing:\n\n1. Maquininha Ton\n2. Produto A\n3. Produto B";
         break;
       case "Especialista em Copy":
         fluxo = "copywriting";
-        initialPrompt =
-          "Digite o nome do produto ou serviço que deseja promover.";
         break;
       default:
         fluxo = "";
-        initialPrompt = "Como posso te ajudar?";
         break;
     }
 
     setStep(fluxo);
+
+    const initialPrompt =
+      agents[fluxo]?.initialPrompt || "Como posso te ajudar?";
+    console.log("💬 Prompt inicial do menu:", initialPrompt);
 
     onSendMessage?.({
       id: Date.now(),
