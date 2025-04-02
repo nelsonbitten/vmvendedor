@@ -59,36 +59,40 @@ const Agente1Page: React.FC = () => {
     const sugestoes = legendaList[userText.toLowerCase()];
 
     if (!sugestoes || sugestoes.length === 0) {
-      const mensagemErro: ChatMessage = {
-        id: Date.now() + 1,
-        text: "Ainda não tenho legendas prontas para esse conteúdo. Pode me dar mais detalhes ou tente outro tema!",
-        sender: "ai",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, mensagemErro]);
-      setIsTyping(false);
+      setTimeout(() => {
+        const mensagemErro: ChatMessage = {
+          id: Date.now() + 1,
+          text: "Ainda não tenho legendas prontas para esse conteúdo. Pode me dar mais detalhes ou tente outro tema!",
+          sender: "ai",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, mensagemErro]);
+        setIsTyping(false);
+      }, 3000);
       return;
     }
 
     const index = Math.floor(Math.random() * sugestoes.length);
     const resposta = sugestoes[index];
 
-    const aiMessage: ChatMessage = {
-      id: Date.now() + 2,
-      text: resposta,
-      sender: "ai",
-      timestamp: new Date(),
-    };
+    setTimeout(() => {
+      const aiMessage: ChatMessage = {
+        id: Date.now() + 2,
+        text: resposta,
+        sender: "ai",
+        timestamp: new Date(),
+      };
 
-    const followUp: ChatMessage = {
-      id: Date.now() + 3,
-      text: "Se quiser outra legenda, é só clicar no botão abaixo 💬",
-      sender: "ai",
-      timestamp: new Date(),
-    };
+      const followUp: ChatMessage = {
+        id: Date.now() + 3,
+        text: "Se quiser outra legenda, é só clicar no botão abaixo 💬",
+        sender: "ai",
+        timestamp: new Date(),
+      };
 
-    setMessages((prev) => [...prev, aiMessage, followUp]);
-    setIsTyping(false);
+      setMessages((prev) => [...prev, aiMessage, followUp]);
+      setIsTyping(false);
+    }, 3000);
   };
 
   const handleCopyMessage = (messageText: string) => {
@@ -108,7 +112,7 @@ const Agente1Page: React.FC = () => {
       <div className="p-4">
         <button
           onClick={() => navigate("/")}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+          className="flex items-center gap-2 px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
         >
           <span className="text-lg">←</span> Voltar
         </button>
@@ -130,9 +134,6 @@ const Agente1Page: React.FC = () => {
               Kora | Geradora de Legendas
             </h2>
             <p className="text-sm text-green-600 font-medium">Online</p>
-            <p className="text-sm text-gray-600">
-              Crio legendas criativas e impactantes para suas redes sociais.
-            </p>
           </div>
         </div>
       </div>
@@ -159,7 +160,7 @@ const Agente1Page: React.FC = () => {
                 className={`rounded-lg p-4 border text-sm whitespace-pre-wrap ${
                   message.sender === "user"
                     ? "bg-gray-100 text-gray-800"
-                    : "bg-[#f7f7f8] text-gray-800 border-gray-200"
+                    : "bg-[#e9fbe9] text-gray-800 border-gray-200"
                 }`}
               >
                 <p
