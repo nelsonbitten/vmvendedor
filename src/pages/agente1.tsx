@@ -31,7 +31,12 @@ const Agente1Page: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    }, 100);
   }, [messages]);
 
   const handleSendMessage = async (entradaUsuario: string) => {
