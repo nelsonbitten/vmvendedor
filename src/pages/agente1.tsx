@@ -172,8 +172,8 @@ const Agente1Page: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Topo estilo WhatsApp */}
-      <div className="p-2 border-b border-gray-200 shadow-sm bg-white flex items-center justify-between">
+      {/* Topo fixo estilo WhatsApp */}
+      <div className="fixed top-0 left-0 right-0 z-40 p-2 border-b border-gray-200 shadow-sm bg-white flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate("/")}
@@ -201,8 +201,11 @@ const Agente1Page: React.FC = () => {
         </button>
       </div>
 
+      {/* Espaço reservado para o topo fixo */}
+      <div className="h-16 sm:h-[72px] shrink-0" />
+
       {/* Conteúdo principal */}
-      <div className="flex-1 overflow-y-auto space-y-4 px-4 pt-4 pb-36 sm:pb-4">
+      <div className="flex-1 overflow-y-auto space-y-4 px-4 pb-36 sm:pb-4">
         {messages.map((message) => (
           <div
             key={message.id}
