@@ -119,26 +119,28 @@ const Agente1Page: React.FC = () => {
       </div>
 
       <div className="p-4 pt-0">
-        <div className="bg-green-100 shadow-md p-4 rounded-xl flex items-center gap-4">
+        <div className="bg-green-100 shadow-md p-3 sm:p-4 rounded-xl flex items-center gap-3 sm:gap-4">
           <div className="relative">
             <img
               src="/agente1.webp"
               alt="Kora"
-              className="w-14 h-14 rounded-full object-cover"
+              className="w-10 h-10 sm:w-14 sm:h-14 rounded-full object-cover"
             />
             <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full animate-ping z-10"></span>
             <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full z-20"></span>
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-800">
               Kora | Geradora de Legendas
             </h2>
-            <p className="text-sm text-green-600 font-medium">Online</p>
+            <p className="text-xs sm:text-sm text-green-600 font-medium">
+              Online
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-4 px-4">
+      <div className="flex-1 overflow-y-auto space-y-4 px-4 pb-4">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -182,7 +184,7 @@ const Agente1Page: React.FC = () => {
               </div>
             )}
             {message.sender === "user" && (
-              <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm font-semibold">
+              <div className="w-7 h-7 rounded-full bg-gray-700 flex items-center justify-center text-white text-[10px] font-semibold">
                 EU
               </div>
             )}
@@ -196,13 +198,15 @@ const Agente1Page: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-4 border-t">
+      <div className="px-4 mb-8 mt-4">
+        <hr className="mb-4 border-gray-300" />
         <button
           onClick={handleGenerateLegenda}
           className="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
         >
           Gerar Legenda
         </button>
+        <hr className="mt-4 border-gray-300" />
       </div>
     </div>
   );
