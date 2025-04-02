@@ -210,7 +210,7 @@ const Agente1Page: React.FC = () => {
       <div className="h-16 sm:h-[72px] shrink-0" />
 
       {/* Conteúdo principal */}
-      <div className="flex-1 overflow-y-auto space-y-4 px-4 pt-4 pb-[160px] sm:pb-4">
+      <div className="flex-1 overflow-y-auto space-y-4 px-4 pt-4 pb-[180px] sm:pb-4">
         {messages.map((message) => (
           <div
             key={message.id}
