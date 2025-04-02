@@ -105,6 +105,62 @@ const remarketingList: Record<string, string[]> = {
   🟢 Sem taxas exorbitantes e sem burocracia. Agilidade e soluções econômicas para o seu negócio!
   Vem falar comigo, vou te ajudar a escolher a melhor opção! 💸`,
 
+    `🚨 ATENÇÃO: Últimas maquininhas com super desconto! 🤑
+  Hoje a Ton tá com uma condição IMBATÍVEL:
+👉 Maquininha sem aluguel, com garantia vitalícia e taxas promocionais só até hoje!
+💳 E mais: você ainda leva a Super Conta Ton, com cartão de débito e acesso ao Baú do Ton, onde seu dinheiro rende e você ainda concorre a prêmios! 🏆
+💥 Tá esperando o quê? Essa oferta não vai durar muito…
+📲 Me chama aqui que eu te explico TUDO e já garanto a sua antes que acabe!`,
+
+    `🚀 Liberdade pra vender mais, sem pagar aluguel! 🙌
+Chega de depender de máquina dos outros! A Ton é sua, sem aluguel, com garantia vitalícia e suporte 24h.
+💸 Venda no débito, crédito e Pix, e receba na conta no mesmo dia!
+📲 Responde aqui que eu te explico como garantir a sua ainda hoje!`,
+
+    `🔥 Desconto RELÂMPAGO só HOJE! ⚡
+A maquininha mais completa do Brasil tá com desconto exclusivo, mas é por TEMPO LIMITADO!
+👉 Taxas reduzidas, dinheiro na hora, suporte top e sem pagar aluguel nunca mais!
+💬 Me chama agora e aproveita enquanto ainda tem disponível!`,
+
+    `🎯 Fature mais e ainda concorra a prêmios! 🏆
+Além de vender com taxas baixíssimas e sem pagar aluguel, a Ton te coloca no Baú do Ton:
+💥 Seu dinheiro rende e você ainda concorre a prêmios todos os dias na Roleta Premiada!
+💬 Bora ativar sua maquininha? Me chama aqui que eu te passo os detalhes.`,
+
+    `💥 Venda com confiança: sua maquininha tem garantia vitalícia! 🔒
+Isso mesmo! Com a Ton, se der problema, você tem troca grátis e garantia pra sempre.
+Além disso: sem aluguel, taxas promocionais e suporte 24h.
+📲 Me responde aqui que eu já garanto a sua!`,
+
+    `⏳ Já passou da hora de você ter a sua Ton! 🕐
+Clientes que compraram semana passada já estão vendendo e recebendo rapidinho!
+Não fica pra trás! Hoje tem oferta exclusiva + taxas reduzidas!
+💬 Me chama que eu te mostro como garantir essa condição antes que acabe.`,
+
+    `🛑 Você vai continuar pagando aluguel por maquininha? 😱
+Com a Ton você tem uma máquina sua, pra sempre, sem aluguel, com recebimento rápido e Super Conta com cartão de débito!
+🎁 E ainda pode levar um descontão HOJE!
+📲 Responde aqui e vem ver como garantir!`,
+
+    `🎉 Sucesso de vendas: a maquininha que mais cresce no Brasil! 🇧🇷
+Milhares de autônomos e empreendedores já estão usando a Ton e faturando mais!
+💳 Com taxas promocionais, sem aluguel e recebimento no mesmo dia, é a sua vez de virar o jogo!
+📩 Me chama e garanta a sua antes que acabe o estoque de hoje.`,
+
+    `⚠️ Só hoje: frete grátis + super desconto na sua Ton! 🚚💨
+É isso mesmo! Leva sua maquininha com frete grátis, taxa reduzida e sem pagar aluguel nunca!
+💸 Receba no mesmo dia e ainda tenha direito ao Baú do Ton.
+💬 Responde aqui e aproveita antes que a promoção acabe!`,
+
+    `💰 Tá vendendo e não tá lucrando? Algo tá errado! 🚫
+Com a Ton, você não paga aluguel, recebe no mesmo dia e ainda entra no Baú do Ton pra fazer seu dinheiro render!
+📲 Me chama aqui que eu te mostro como mudar isso agora!`,
+
+    `📉 Taxas nas alturas? Com a Ton isso acabou! 🚫
+Hoje você pode garantir a maquininha com as menores taxas do mercado e ainda receber o valor da venda no mesmo dia!
+Tudo isso sem aluguel e com suporte 24h.
+📲 Me chama aqui e garanta essa condição especial enquanto tá no ar!`,
+
     `Precisando de ajuda para descomplicar a gestão do seu negócio? 🧑‍💼
   Você já tem um monte de tarefas pra fazer, não precisa de complicação na hora de receber.
   🟢 Com o Ton, você tem dinheiro rápido e sem taxas altas.

@@ -12,12 +12,37 @@ const Agente3Page: React.FC = () => {
     null
   );
   const [copied, setCopied] = useState<boolean>(false); // Estado para exibir a notificação de copiado
+  const [remarketingCount, setRemarketingCount] = useState<number>(0); // Contador de remarketings gerados
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const hoje = new Date();
+    const diaSemana = hoje.toLocaleDateString("pt-BR", { weekday: "long" });
+    const dataFormatada = hoje.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+    });
+    const textoData = `<strong style="color: #2563eb">(${diaSemana} - ${dataFormatada})</strong>`;
+
+    // Checa se a data de hoje corresponde ao valor armazenado e a contagem de remarketings
+    const lastGeneratedDate = localStorage.getItem("lastGeneratedDate");
+    const currentDate = hoje.toLocaleDateString("pt-BR");
+
+    if (lastGeneratedDate !== currentDate) {
+      localStorage.setItem("lastGeneratedDate", currentDate);
+      localStorage.setItem("remarketingCount", "0"); // Reinicia o contador no novo dia
+      setRemarketingCount(0);
+    } else {
+      const count = parseInt(
+        localStorage.getItem("remarketingCount") || "0",
+        10
+      );
+      setRemarketingCount(count);
+    }
+
     const mensagemInicial: ChatMessage = {
       id: Date.now(),
-      text: "Oi, tudo bem? Para gerar o remarketing de hoje é só clicar no botão abaixo.",
+      text: `👋 Oi, tudo bem? Para gerar o remarketing de <strong>hoje</strong> ${textoData} é só clicar no botão abaixo.`,
       sender: "ai",
       timestamp: new Date(),
     };
@@ -94,15 +119,30 @@ const Agente3Page: React.FC = () => {
   // Função para copiar a mensagem para a área de transferência
   const handleCopyMessage = (messageText: string) => {
     navigator.clipboard.writeText(messageText).then(() => {
-      setCopied(true); // Exibe a confirmação de copiado
-      setTimeout(() => setCopied(false), 2000); // Reseta o estado após 2 segundos
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     });
   };
 
-  // Função para gerar o remarketing de hoje quando o botão for clicado
   const handleGenerateRemarketing = () => {
-    const textoGerado = "remarketing"; // Isso pode ser customizado de acordo com a lógica necessária
+    if (remarketingCount >= 2) {
+      const mensagemLimite: ChatMessage = {
+        id: Date.now(),
+        text: "Você já gerou dois remarketings hoje. Volte amanhã para gerar novos.",
+        sender: "ai",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, mensagemLimite]);
+      return;
+    }
+
+    const textoGerado = "remarketing";
     handleSendMessage(textoGerado);
+
+    // Incrementa o contador e atualiza no localStorage
+    const newCount = remarketingCount + 1;
+    setRemarketingCount(newCount);
+    localStorage.setItem("remarketingCount", newCount.toString());
   };
 
   return (
@@ -128,7 +168,9 @@ const Agente3Page: React.FC = () => {
             <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full z-20"></span>
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-800">Luma</h2>
+            <h2 className="text-lg font-semibold text-gray-800">
+              Luma | Remarketing de Hoje
+            </h2>
             <p className="text-sm text-green-600 font-medium">Online</p>
             <p className="text-sm text-gray-600">
               Crio mensagens estratégicas para manter leads engajados e prontos
@@ -163,7 +205,10 @@ const Agente3Page: React.FC = () => {
                     : "bg-[#f7f7f8] text-gray-800 border-gray-200"
                 }`}
               >
-                <p className="pr-8">{message.text}</p>
+                <p
+                  className="pr-8"
+                  dangerouslySetInnerHTML={{ __html: message.text }}
+                ></p>
               </div>
             </div>
             {message.sender === "ai" && (

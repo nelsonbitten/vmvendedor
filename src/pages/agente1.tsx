@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaClipboard, FaClipboardCheck } from "react-icons/fa";
 import { ChatMessage } from "../types";
-import MessageList from "../components/MessageList";
-import MessageInput from "../components/MessageInput";
-import { sendMessageToAI } from "../services/api";
+import legendaList from "../data/legendaList";
 
 const Agente1Page: React.FC = () => {
   const navigate = useNavigate();
@@ -12,12 +11,13 @@ const Agente1Page: React.FC = () => {
   const [ultimaEntradaValida, setUltimaEntradaValida] = useState<string | null>(
     null
   );
+  const [copied, setCopied] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const mensagemInicial: ChatMessage = {
       id: Date.now(),
-      text: "Oi! 😊 Me conta sobre o conteúdo ou produto que você quer divulgar e eu crio uma legenda impactante pra você!",
+      text: "Oi! 😊 Clica no botão abaixo para gerar as legendas.",
       sender: "ai",
       timestamp: new Date(),
     };
@@ -30,32 +30,11 @@ const Agente1Page: React.FC = () => {
 
   const handleSendMessage = async (entradaUsuario: string) => {
     const textoLimpo = entradaUsuario.trim().toLowerCase();
-    const irrelevantes = [
-      "oi",
-      "olá",
-      "tudo bem",
-      "e aí",
-      "bom dia",
-      "boa tarde",
-      "boa noite",
-      "ok",
-      "quero",
-      "não sei",
-      "sim",
-      "não",
-      "help",
-      "me ajuda",
-    ];
-
     const pedidoNovaVersao = [
       "quero outra",
       "outra",
       "mais uma",
-      "me dá mais uma",
-      "sim quero mais uma",
-      "quero mais uma",
       "manda outra",
-      "sim",
     ];
 
     const userText =
@@ -77,87 +56,55 @@ const Agente1Page: React.FC = () => {
       setUltimaEntradaValida(userText);
     }
 
-    if (
-      userText.trim().length < 6 ||
-      irrelevantes.includes(userText.trim().toLowerCase())
-    ) {
-      const mensagemPedindoInfo: ChatMessage = {
+    const sugestoes = legendaList[userText.toLowerCase()];
+
+    if (!sugestoes || sugestoes.length === 0) {
+      const mensagemErro: ChatMessage = {
         id: Date.now() + 1,
-        text: "Pra eu criar sua legenda, me conta sobre o conteúdo ou produto que você quer divulgar! ✍️",
+        text: "Ainda não tenho legendas prontas para esse conteúdo. Pode me dar mais detalhes ou tente outro tema!",
         sender: "ai",
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, mensagemPedindoInfo]);
+      setMessages((prev) => [...prev, mensagemErro]);
       setIsTyping(false);
       return;
     }
 
-    const prompt = `
-Você é Kora, especialista em legendas para redes sociais.
+    const index = Math.floor(Math.random() * sugestoes.length);
+    const resposta = sugestoes[index];
 
-⚠️ IMPORTANTE:
-Antes de gerar qualquer legenda, avalie criticamente a entrada do usuário. Se ela **não contiver informação suficiente sobre o que é o conteúdo ou produto a ser divulgado**, você **não deve criar uma legenda ainda**.
+    const aiMessage: ChatMessage = {
+      id: Date.now() + 2,
+      text: resposta,
+      sender: "ai",
+      timestamp: new Date(),
+    };
 
-Exemplo de entradas vagas:
-- "preciso de uma legenda"
-- "me ajuda com legenda"
-- "cria uma legenda pra mim"
+    const followUp: ChatMessage = {
+      id: Date.now() + 3,
+      text: "Se quiser outra legenda, é só clicar no botão abaixo 💬",
+      sender: "ai",
+      timestamp: new Date(),
+    };
 
-Nesses casos, **nunca tente adivinhar** o que é o conteúdo. Pergunte com empatia:
-"Esse conteúdo é sobre o quê? Qual é a ideia principal ou produto que quer divulgar?"
+    setMessages((prev) => [...prev, aiMessage, followUp]);
+    setIsTyping(false);
+  };
 
-🧠 Quando tiver contexto suficiente, siga as diretrizes abaixo para criar a legenda:
+  const handleCopyMessage = (messageText: string) => {
+    navigator.clipboard.writeText(messageText).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
-- Comece com um gancho que prenda a atenção
-- Linguagem simples, emocional e persuasiva
-- Emojis com moderação
-- Chamada para ação no final (ex: “Clique no link da bio”, “Comente aqui”, “Compartilhe com alguém”)
-- Nada de hashtags ou frases genéricas
-- A resposta deve conter **apenas a legenda**, sem explicações ou texto adicional
-- Nunca pergunte novamente sobre o conteúdo quando o usuário pedir outra versão, apenas gere uma nova
-- Não repita a frase "Se quiser ajustar ou criar outra versão..." em sequência
-
-Mensagem recebida do usuário:
-"${userText}"
-
-Se o conteúdo não for suficiente, pare tudo e peça mais contexto. Se for suficiente, gere uma legenda incrível. Após a resposta, diga:
-"Se quiser ajustar ou criar outra versão, é só me falar! 💬"
-`;
-
-    try {
-      const aiText = await sendMessageToAI(prompt);
-
-      const aiMessage: ChatMessage = {
-        id: Date.now() + 2,
-        text: aiText,
-        sender: "ai",
-        timestamp: new Date(),
-      };
-
-      const followUp: ChatMessage = {
-        id: Date.now() + 3,
-        text: "Se quiser ajustar ou criar outra versão, é só me falar! 💬",
-        sender: "ai",
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, aiMessage, followUp]);
-    } catch (error) {
-      const errorMsg: ChatMessage = {
-        id: Date.now() + 4,
-        text: "Opa! Algo deu errado ao criar sua legenda. Tenta de novo em instantes 💜",
-        sender: "ai",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMsg]);
-    } finally {
-      setIsTyping(false);
-    }
+  const handleGenerateLegenda = () => {
+    const textoGerado = "legenda";
+    handleSendMessage(textoGerado);
   };
 
   return (
     <div className="flex flex-col h-full">
-      {/* Voltar */}
       <div className="p-4">
         <button
           onClick={() => navigate("/")}
@@ -167,29 +114,29 @@ Se o conteúdo não for suficiente, pare tudo e peça mais contexto. Se for sufi
         </button>
       </div>
 
-      {/* Card do agente */}
       <div className="p-4 pt-0">
         <div className="bg-green-100 shadow-md p-4 rounded-xl flex items-center gap-4">
           <div className="relative">
             <img
               src="/agente1.webp"
               alt="Kora"
-              className="w-10 h-10 rounded-full object-cover"
+              className="w-14 h-14 rounded-full object-cover"
             />
             <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full animate-ping z-10"></span>
             <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full z-20"></span>
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-800">Kora</h2>
+            <h2 className="text-lg font-semibold text-gray-800">
+              Kora | Geradora de Legendas
+            </h2>
             <p className="text-sm text-green-600 font-medium">Online</p>
             <p className="text-sm text-gray-600">
-              Crio legendas impactantes para suas redes sociais.
+              Crio legendas criativas e impactantes para suas redes sociais.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Lista de mensagens */}
       <div className="flex-1 overflow-y-auto space-y-4 px-4">
         {messages.map((message) => (
           <div
@@ -215,9 +162,24 @@ Se o conteúdo não for suficiente, pare tudo e peça mais contexto. Se for sufi
                     : "bg-[#f7f7f8] text-gray-800 border-gray-200"
                 }`}
               >
-                <p className="pr-8">{message.text}</p>
+                <p
+                  className="pr-8"
+                  dangerouslySetInnerHTML={{ __html: message.text }}
+                ></p>
               </div>
             </div>
+            {message.sender === "ai" && (
+              <div
+                onClick={() => handleCopyMessage(message.text)}
+                className="cursor-pointer ml-2"
+              >
+                {copied ? (
+                  <FaClipboardCheck className="text-green-500" />
+                ) : (
+                  <FaClipboard className="text-gray-600" />
+                )}
+              </div>
+            )}
             {message.sender === "user" && (
               <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm font-semibold">
                 EU
@@ -233,9 +195,13 @@ Se o conteúdo não for suficiente, pare tudo e peça mais contexto. Se for sufi
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <div className="p-4 border-t">
-        <MessageInput isDarkMode={false} onSendMessage={handleSendMessage} />
+        <button
+          onClick={handleGenerateLegenda}
+          className="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+        >
+          Gerar Legenda
+        </button>
       </div>
     </div>
   );
