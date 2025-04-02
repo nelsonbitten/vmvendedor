@@ -1,8 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaRegCopy, FaCheck } from "react-icons/fa6";
+import { IoIosInformationCircle } from "react-icons/io";
+import { HiOutlineLightBulb } from "react-icons/hi2";
 import { ChatMessage } from "../types";
 import legendaList from "../data/legendaList";
+
+const temasSugeridos = ["Maquininhas", "Legenda Aleatória", "Promoção"];
 
 const Agente1Page: React.FC = () => {
   const navigate = useNavigate();
@@ -12,12 +16,14 @@ const Agente1Page: React.FC = () => {
     null
   );
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [temaSelecionado, setTemaSelecionado] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const mensagemInicial: ChatMessage = {
       id: Date.now(),
-      text: "Oi! 😊 Clica no botão abaixo para gerar as legendas.",
+      text: "Legendas criativas? Engajamento? Deixa comigo! Só clicar no botão! 😍",
       sender: "ai",
       timestamp: new Date(),
     };
@@ -54,6 +60,53 @@ const Agente1Page: React.FC = () => {
 
     if (!pedidoNovaVersao.includes(textoLimpo)) {
       setUltimaEntradaValida(userText);
+    }
+
+    if (textoLimpo === "maquininhas") {
+      setTimeout(() => {
+        const pergunta: ChatMessage = {
+          id: Date.now() + 1,
+          text: "Para qual maquininha? T1, T2, T3 ou T3 SMART:",
+          sender: "ai",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, pergunta]);
+        setIsTyping(false);
+      }, 1000);
+      return;
+    }
+
+    const opcoesMaquininha = ["t1", "t2", "t3", "t3 smart"];
+    if (opcoesMaquininha.includes(textoLimpo)) {
+      const sugestoes = legendaList[textoLimpo];
+      if (!sugestoes || sugestoes.length === 0) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now() + 2,
+            text: "Ainda não tenho legendas prontas para essa maquininha. Tente outra!",
+            sender: "ai",
+            timestamp: new Date(),
+          },
+        ]);
+        setIsTyping(false);
+        return;
+      }
+      const index = Math.floor(Math.random() * sugestoes.length);
+      const resposta = sugestoes[index];
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now() + 3,
+            text: resposta,
+            sender: "ai",
+            timestamp: new Date(),
+          },
+        ]);
+        setIsTyping(false);
+      }, 1000);
+      return;
     }
 
     const sugestoes = legendaList[userText.toLowerCase()];
@@ -110,8 +163,11 @@ const Agente1Page: React.FC = () => {
   };
 
   const handleGenerateLegenda = () => {
-    const textoGerado = "legenda";
-    handleSendMessage(textoGerado);
+    if (!temaSelecionado) {
+      handleSendMessage("legenda");
+    } else {
+      handleSendMessage(temaSelecionado);
+    }
   };
 
   return (
@@ -126,7 +182,12 @@ const Agente1Page: React.FC = () => {
       </div>
 
       <div className="p-4 pt-0">
-        <div className="bg-green-100 shadow-md p-3 sm:p-4 rounded-xl flex items-center gap-3 sm:gap-4">
+        <div className="bg-green-100 shadow-md p-3 sm:p-4 rounded-xl flex items-center gap-3 sm:gap-4 relative">
+          <div className="absolute top-2 right-2">
+            <button onClick={() => setShowModal(true)}>
+              <IoIosInformationCircle className="text-green-600 w-5 h-5 hover:text-green-700 transition" />
+            </button>
+          </div>
           <div className="relative">
             <img
               src="/agente1.webp"
@@ -147,7 +208,7 @@ const Agente1Page: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-4 px-4 pb-24 sm:pb-4">
+      <div className="flex-1 overflow-y-auto space-y-4 px-4 pb-36 sm:pb-4">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -176,6 +237,20 @@ const Agente1Page: React.FC = () => {
                   className="pr-8"
                   dangerouslySetInnerHTML={{ __html: message.text }}
                 ></p>
+
+                {message.text.includes("Para qual maquininha") && (
+                  <div className="flex gap-2 mt-3 flex-wrap">
+                    {["T1", "T2", "T3", "T3 SMART"].map((opcao) => (
+                      <button
+                        key={opcao}
+                        onClick={() => handleSendMessage(opcao)}
+                        className="px-3 py-1 bg-green-500 text-white text-xs rounded-full hover:bg-green-600"
+                      >
+                        {opcao}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 {isCopyable(message) && (
                   <button
@@ -207,15 +282,59 @@ const Agente1Page: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Fundo fixo do botão */}
-      <div className="fixed bottom-0 w-full bg-white shadow-inner z-40 sm:static sm:shadow-none">
-        <div className="px-4 py-3">
-          <button
-            onClick={handleGenerateLegenda}
-            className="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-base sm:text-lg font-semibold"
-          >
-            Gerar Legenda
-          </button>
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-4 w-[90%] max-w-sm text-center">
+            <img
+              src="/agente1.webp"
+              alt="Kora"
+              className="w-20 h-20 mx-auto rounded-full object-cover mb-3"
+            />
+            <h2 className="text-lg font-semibold text-gray-800">Kora</h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Sou sua ajudante de legendas criativas! Me diga o tema e eu te
+              entrego sugestões prontas para bombar nas redes! 🚀
+            </p>
+            <button
+              onClick={() => setShowModal(false)}
+              className="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm"
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Área de ação com visual aprimorado */}
+      <div className="fixed bottom-0 w-full bg-white shadow-inner z-40 sm:static sm:shadow-none border-t border-gray-100">
+        <div className="px-4 py-4">
+          <div className="mb-2 flex items-center gap-2 text-sm text-gray-600 font-medium">
+            <HiOutlineLightBulb className="w-5 h-5 text-yellow-500" />
+            Escolha um tema para sua legenda
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <select
+              value={temaSelecionado}
+              onChange={(e) => setTemaSelecionado(e.target.value)}
+              className="w-full sm:flex-1 px-4 py-3 bg-green-50 border border-green-300 rounded-lg text-sm text-green-800 focus:outline-none focus:ring-2 focus:ring-green-400"
+            >
+              <option value="" disabled>
+                Selecione um tema criativo...
+              </option>
+              {temasSugeridos.map((tema) => (
+                <option key={tema} value={tema}>
+                  {tema}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={handleGenerateLegenda}
+              className="w-full sm:w-auto px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm sm:text-base font-semibold"
+            >
+              Gerar Legenda
+            </button>
+          </div>
         </div>
       </div>
     </div>
