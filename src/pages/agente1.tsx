@@ -147,7 +147,7 @@ const Agente1Page: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-4 px-4 pb-20 sm:pb-4">
+      <div className="flex-1 overflow-y-auto space-y-4 px-4 pb-24 sm:pb-4">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -207,13 +207,16 @@ const Agente1Page: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="px-4 sm:static fixed bottom-3 w-full max-w-[100vw] z-50">
-        <button
-          onClick={handleGenerateLegenda}
-          className="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-base sm:text-lg font-semibold"
-        >
-          Gerar Legenda
-        </button>
+      {/* Fundo fixo do botão */}
+      <div className="fixed bottom-0 w-full bg-white shadow-inner z-40 sm:static sm:shadow-none">
+        <div className="px-4 py-3">
+          <button
+            onClick={handleGenerateLegenda}
+            className="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-base sm:text-lg font-semibold"
+          >
+            Gerar Legenda
+          </button>
+        </div>
       </div>
     </div>
   );
