@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaClipboard, FaClipboardCheck } from "react-icons/fa";
+import { FaRegCopy, FaCheck } from "react-icons/fa6";
 import { ChatMessage } from "../types";
 import legendaList from "../data/legendaList";
 
@@ -11,7 +11,7 @@ const Agente1Page: React.FC = () => {
   const [ultimaEntradaValida, setUltimaEntradaValida] = useState<string | null>(
     null
   );
-  const [copied, setCopied] = useState<boolean>(false);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -95,11 +95,18 @@ const Agente1Page: React.FC = () => {
     }, 3000);
   };
 
-  const handleCopyMessage = (messageText: string) => {
+  const handleCopyMessage = (messageText: string, messageId: number) => {
     navigator.clipboard.writeText(messageText).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setCopiedId(messageId);
+      setTimeout(() => setCopiedId(null), 2000);
     });
+  };
+
+  const isCopyable = (message: ChatMessage) => {
+    return (
+      message.sender === "ai" &&
+      !message.text.toLowerCase().startsWith("se quiser outra")
+    );
   };
 
   const handleGenerateLegenda = () => {
@@ -140,7 +147,7 @@ const Agente1Page: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-4 px-4 pb-4">
+      <div className="flex-1 overflow-y-auto space-y-4 px-4 pb-20 sm:pb-4">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -169,20 +176,22 @@ const Agente1Page: React.FC = () => {
                   className="pr-8"
                   dangerouslySetInnerHTML={{ __html: message.text }}
                 ></p>
-              </div>
-            </div>
-            {message.sender === "ai" && (
-              <div
-                onClick={() => handleCopyMessage(message.text)}
-                className="cursor-pointer ml-2"
-              >
-                {copied ? (
-                  <FaClipboardCheck className="text-green-500" />
-                ) : (
-                  <FaClipboard className="text-gray-600" />
+
+                {isCopyable(message) && (
+                  <button
+                    onClick={() => handleCopyMessage(message.text, message.id)}
+                    className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition"
+                    title="Copiar"
+                  >
+                    {copiedId === message.id ? (
+                      <FaCheck className="w-3.5 h-3.5" />
+                    ) : (
+                      <FaRegCopy className="w-3.5 h-3.5" />
+                    )}
+                  </button>
                 )}
               </div>
-            )}
+            </div>
             {message.sender === "user" && (
               <div className="w-7 h-7 rounded-full bg-gray-700 flex items-center justify-center text-white text-[10px] font-semibold">
                 EU
