@@ -171,44 +171,38 @@ const Agente1Page: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4">
-        <button
-          onClick={() => navigate("/")}
-          className="flex items-center gap-2 px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
-        >
-          <span className="text-lg">←</span> Voltar
-        </button>
-      </div>
-
-      <div className="p-4 pt-0">
-        <div className="bg-green-100 shadow-md p-3 sm:p-4 rounded-xl flex items-center gap-3 sm:gap-4 relative">
-          <div className="absolute top-2 right-2">
-            <button onClick={() => setShowModal(true)}>
-              <IoIosInformationCircle className="text-green-600 w-5 h-5 hover:text-green-700 transition" />
-            </button>
-          </div>
+    <div className="flex flex-col h-screen">
+      {/* Topo estilo WhatsApp */}
+      <div className="p-2 border-b border-gray-200 shadow-sm bg-white flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate("/")}
+            className="text-2xl text-green-600 hover:text-green-700 transition"
+          >
+            ←
+          </button>
           <div className="relative">
             <img
               src="/agente1.webp"
               alt="Kora"
-              className="w-10 h-10 sm:w-14 sm:h-14 rounded-full object-cover"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"
             />
-            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full animate-ping z-10"></span>
-            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full z-20"></span>
+            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full z-20"></span>
           </div>
-          <div>
-            <h2 className="text-base sm:text-lg font-semibold text-gray-800">
-              Kora | Geradora de Legendas
+          <div className="flex flex-col">
+            <h2 className="text-sm sm:text-base font-semibold text-gray-800">
+              Kora
             </h2>
-            <p className="text-xs sm:text-sm text-green-600 font-medium">
-              Online
-            </p>
+            <span className="text-xs text-green-600">online</span>
           </div>
         </div>
+        <button onClick={() => setShowModal(true)}>
+          <IoIosInformationCircle className="text-green-600 w-6 h-6 hover:text-green-700 transition" />
+        </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-4 px-4 pb-36 sm:pb-4">
+      {/* Conteúdo principal */}
+      <div className="flex-1 overflow-y-auto space-y-4 px-4 pt-4 pb-36 sm:pb-4">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -306,7 +300,7 @@ const Agente1Page: React.FC = () => {
         </div>
       )}
 
-      {/* Área de ação com visual aprimorado */}
+      {/* Ações */}
       <div className="fixed bottom-0 w-full bg-white shadow-inner z-40 sm:static sm:shadow-none border-t border-gray-100">
         <div className="px-4 py-4">
           <div className="mb-2 flex items-center gap-2 text-sm text-gray-600 font-medium">

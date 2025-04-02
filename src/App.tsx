@@ -23,6 +23,7 @@ function ChatApp() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const location = useLocation();
+  const esconderHeader = location.pathname === "/agente1";
 
   const { step, setStep, handleMenuClick, handleUserMessage } = useChatFlow(
     (message) => {
@@ -59,12 +60,10 @@ function ChatApp() {
   const handleSendMessage = (input: string | ChatMessage, image?: File) => {
     const text = typeof input === "string" ? input : input.text;
 
-    // ✅ Evita mensagens vazias
     if (!text.trim() && !image) return;
 
-    // ✅ Só chama o fluxo se for texto puro
     if (typeof input === "string") {
-      handleUserMessage(text); // 🔥 isso já adiciona a mensagem e chama a IA
+      handleUserMessage(text);
     }
   };
 
@@ -78,51 +77,53 @@ function ChatApp() {
         isDarkMode ? "bg-gray-900" : "bg-white"
       } overscroll-none`}
     >
-      <header
-        className={`${
-          isDarkMode
-            ? "bg-gray-900 border-gray-700"
-            : "bg-white border-gray-200"
-        } border-b p-4 flex-none`}
-      >
-        <div className="w-full flex items-center justify-between">
-          <h1
-            className={`text-2xl font-semibold ${
-              isDarkMode ? "text-white" : "text-gray-800"
-            }`}
-          >
-            NexOS
-          </h1>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className={`${
-                isDarkMode
-                  ? "text-gray-300 hover:text-white"
-                  : "text-gray-600 hover:text-gray-800"
-              } transition-colors`}
-              title={isDarkMode ? "Modo claro" : "Modo escuro"}
+      {!esconderHeader && (
+        <header
+          className={`$${
+            isDarkMode
+              ? "bg-gray-900 border-gray-700"
+              : "bg-white border-gray-200"
+          } border-b p-4 flex-none`}
+        >
+          <div className="w-full flex items-center justify-between">
+            <h1
+              className={`text-2xl font-semibold ${
+                isDarkMode ? "text-white" : "text-gray-800"
+              }`}
             >
-              {isDarkMode ? (
-                <Sun className="w-5 h-5" />
-              ) : (
-                <Moon className="w-5 h-5" />
-              )}
-            </button>
+              NexOS
+            </h1>
 
-            {isInstallable && (
+            <div className="flex items-center gap-3">
               <button
-                onClick={handleInstallClick}
-                className="md:hidden flex items-center gap-1 bg-teal-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors"
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className={`$${
+                  isDarkMode
+                    ? "text-gray-300 hover:text-white"
+                    : "text-gray-600 hover:text-gray-800"
+                } transition-colors`}
+                title={isDarkMode ? "Modo claro" : "Modo escuro"}
               >
-                <Download className="w-4 h-4" />
-                Instalar App
+                {isDarkMode ? (
+                  <Sun className="w-5 h-5" />
+                ) : (
+                  <Moon className="w-5 h-5" />
+                )}
               </button>
-            )}
+
+              {isInstallable && (
+                <button
+                  onClick={handleInstallClick}
+                  className="md:hidden flex items-center gap-1 bg-teal-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  Instalar App
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <main className="flex-1 overflow-hidden max-w-4xl w-full mx-auto relative">
         <Routes>
@@ -154,12 +155,11 @@ function ChatApp() {
             }
           />
 
-          {/* ✅ Agentes com stepInicial configurado */}
           <Route
             path="/agente1"
             element={
               <Agente1Page
-                stepInicial="legendas" // ✅ Agora Kora se comporta como especialista em legendas
+                stepInicial="legendas"
                 messages={messages}
                 isTyping={isTyping}
                 isDarkMode={isDarkMode}
