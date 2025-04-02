@@ -198,10 +198,10 @@ const Agente1Page: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="px-4 mb-8 sm:mb-8 sm:static fixed bottom-2 w-full max-w-[100vw]">
+      <div className="px-4 sm:static fixed bottom-3 w-full max-w-[100vw] z-50">
         <button
           onClick={handleGenerateLegenda}
-          className="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm"
+          className="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-base sm:text-lg font-semibold"
         >
           Gerar Legenda
         </button>
