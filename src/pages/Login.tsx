@@ -1,97 +1,89 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabaseClient";
+import { useState } from "react";
+import {
+  FaEnvelope,
+  FaLock,
+  FaEye,
+  FaEyeSlash,
+  FaGoogle,
+} from "react-icons/fa";
 
-const Login = () => {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      setError("Email ou senha inválidos.");
-    } else {
-      console.log("Usuário autenticado:", data.user);
-      navigate("/admin");
-    }
-  };
+export default function LoginPage() {
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
-      <div className="hidden md:flex items-center justify-center bg-black text-white p-10">
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl font-semibold">
-            Discover the Future of Finance <br /> from Mars ✴ to Your Wallet
+    <div className="min-h-screen flex items-center justify-center bg-white p-4">
+      <div className="w-full max-w-sm shadow-lg rounded-2xl p-8 space-y-6 border border-gray-200">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800">
+            Bem-vindo de volta
           </h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Entre para continuar acessando sua conta
+          </p>
         </div>
-      </div>
 
-      <div className="flex items-center justify-center p-6 bg-white">
-        <div className="w-full max-w-md">
-          <h2 className="text-2xl font-bold mb-6 text-gray-900">
-            Vender Maquininha
-          </h2>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                <FaEnvelope />
+              </span>
               <input
                 type="email"
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-black focus:border-black"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                placeholder="Digite seu email"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-800"
               />
             </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Senha
-              </label>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Senha
+            </label>
+            <div className="relative">
+              <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                <FaLock />
+              </span>
               <input
-                type="password"
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-black focus:border-black"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                type={showPassword ? "text" : "password"}
+                placeholder="Digite sua senha"
+                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-800"
               />
-              <div className="text-right mt-1">
-                <a href="#" className="text-sm text-gray-500 hover:text-black">
-                  Esqueci minha senha
-                </a>
-              </div>
-            </div>
-
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-
-            <div className="flex items-center justify-between">
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-black text-white font-medium py-2 px-4 rounded-xl transition duration-200 hover:bg-gray-800"
+              <span
+                className="absolute inset-y-0 right-3 flex items-center text-gray-400 cursor-pointer"
+                onClick={() => setShowPassword(!showPassword)}
               >
-                {loading ? "Entrando..." : "Entrar"}
-              </button>
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
             </div>
-          </form>
+          </div>
         </div>
+
+        <button className="w-full bg-black text-white py-2.5 rounded-lg text-sm font-medium hover:opacity-90 transition">
+          Entrar
+        </button>
+
+        <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+          <span className="h-px w-16 bg-gray-300" />
+          ou
+          <span className="h-px w-16 bg-gray-300" />
+        </div>
+
+        <button className="w-full border border-gray-300 flex items-center justify-center gap-3 py-2.5 rounded-lg hover:bg-gray-100 transition text-sm">
+          <FaGoogle className="text-red-500" />
+          <span className="font-medium text-gray-700">Entrar com Google</span>
+        </button>
+
+        <p className="text-sm text-center text-gray-500">
+          Não tem uma conta?{" "}
+          <a href="#" className="text-gray-800 hover:underline font-medium">
+            Cadastre-se
+          </a>
+        </p>
       </div>
     </div>
   );
-};
-
-export default Login;
+}

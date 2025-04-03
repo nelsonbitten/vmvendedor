@@ -31,12 +31,13 @@ const Agente1Page: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({
         behavior: "smooth",
         block: "end",
       });
     }, 100);
+    return () => clearTimeout(timeout);
   }, [messages]);
 
   const handleSendMessage = async (entradaUsuario: string) => {
@@ -115,7 +116,6 @@ const Agente1Page: React.FC = () => {
     }
 
     const sugestoes = legendaList[userText.toLowerCase()];
-
     if (!sugestoes || sugestoes.length === 0) {
       setTimeout(() => {
         const mensagemErro: ChatMessage = {
@@ -209,7 +209,7 @@ const Agente1Page: React.FC = () => {
       {/* Espaço reservado para o topo fixo */}
       <div className="h-16 sm:h-[72px] shrink-0" />
 
-      {/* Conteúdo principal */}
+      {/* Conteúdo principal com padding ajustado */}
       <div className="flex-1 overflow-y-auto space-y-4 px-4 pt-4 pb-[180px] sm:pb-4">
         {messages.map((message) => (
           <div
@@ -239,7 +239,6 @@ const Agente1Page: React.FC = () => {
                   className="pr-8"
                   dangerouslySetInnerHTML={{ __html: message.text }}
                 ></p>
-
                 {message.text.includes("Para qual maquininha") && (
                   <div className="flex gap-2 mt-3 flex-wrap">
                     {["T1", "T2", "T3", "T3 SMART"].map((opcao) => (
@@ -253,7 +252,6 @@ const Agente1Page: React.FC = () => {
                     ))}
                   </div>
                 )}
-
                 {isCopyable(message) && (
                   <button
                     onClick={() => handleCopyMessage(message.text, message.id)}
@@ -308,7 +306,7 @@ const Agente1Page: React.FC = () => {
         </div>
       )}
 
-      {/* Ações */}
+      {/* Rodapé fixo */}
       <div className="fixed bottom-0 w-full bg-white shadow-inner z-40 sm:static sm:shadow-none border-t border-gray-100">
         <div className="px-4 py-4">
           <div className="mb-2 flex items-center gap-2 text-sm text-gray-600 font-medium">
